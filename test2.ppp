@@ -1,0 +1,15 @@
+program Ejemplo2;
+
+var
+  int i, j, p;
+
+int module fact(int j)
+  var int i;
+{
+  i = j + (p - j * 2 + j);
+  return (i);
+}
+
+main() {
+  i = fact(10);
+}
