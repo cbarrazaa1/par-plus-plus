@@ -1,0 +1,17 @@
+program Ejemplo4;
+
+var
+  int x, y;
+
+int module intersects(int lX, int lY, int lW, int lH)
+  var int res;
+{
+  res = (
+    (x > lX & x < lX + lW) |
+    (y > lY & y < lY + lH)
+  );
+}
+
+main() {
+
+}

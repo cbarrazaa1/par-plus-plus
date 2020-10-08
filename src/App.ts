@@ -4,7 +4,7 @@ import {ParPlusPlusParser} from './antlr/ParPlusPlusParser';
 import {readFileSync} from 'fs';
 
 function main(): void {
-  const inputText = readFileSync('test1.ppp', 'utf-8');
+  const inputText = readFileSync('test4.ppp', 'utf-8');
   const inputStream = CharStreams.fromString(inputText);
   const lexer = new ParPlusPlusLexer(inputStream);
   const tokenStream = new CommonTokenStream(lexer);
@@ -13,6 +13,8 @@ function main(): void {
   
   console.log(tree);
   console.log(tree.ID().text);
+  console.log(tree.main_function!().block!().statement!().map(stmt => stmt.text));
+  console.log(tree.function!().map(fn => fn.block!().statement!().map(stmt => stmt.text)));
 }
 
 main();
