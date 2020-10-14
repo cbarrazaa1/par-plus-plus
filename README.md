@@ -1,4 +1,14 @@
-# Progreso Actual
+# Progreso Actual - Entrega #2
+En esta entrega se realiza la semántica básica del compilador. Ya se crea
+la tabla de funciones, y cada una de estas funciones crean su respectiva
+tabla de variables. También ya se da error de declaración múltiple en caso
+de nombre de variables o funciones repetidos.
+
+Finalmente, ya está construido el cubo semántico para utilizarse en entregas
+posteriores.
+
+
+# Resumen de Progreso
 - Análisis de Léxico y Sintáxis [100%]
 ---
 - Semántica Básica de Variables: Directorio de Procedimientos y Tablas de Variables [100%]

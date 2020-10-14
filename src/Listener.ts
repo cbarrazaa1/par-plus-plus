@@ -47,6 +47,12 @@ export default class Listener implements ParPlusPlusListener {
     const name = ctx.ID().text;
     const type = stringToValueType(ctx.type() != null ? ctx.type().text : 'void');
     this.currentFunc = name;
+
+    // check if exists
+    if (this.funcTable[name] != null) {
+      throw new Error(`Function ${name} already declared.`);
+    }
+
     this.funcTable[name] = {
       name,
       type,
