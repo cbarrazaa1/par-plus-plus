@@ -13,6 +13,7 @@ export enum Op {
   LT, // <
   GTE, // >=
   LTE, // =<
+  ASSIGN, // =
 }
 
 const cube = new Array(3);
@@ -35,6 +36,7 @@ cube[ValueType.INT][ValueType.INT][Op.GT] = ValueType.INT;
 cube[ValueType.INT][ValueType.INT][Op.LT] = ValueType.INT;
 cube[ValueType.INT][ValueType.INT][Op.GTE] = ValueType.INT;
 cube[ValueType.INT][ValueType.INT][Op.LTE] = ValueType.INT;
+cube[ValueType.INT][ValueType.INT][Op.ASSIGN] = ValueType.INT;
 
 cube[ValueType.INT][ValueType.FLOAT][Op.ADD] = ValueType.FLOAT;
 cube[ValueType.INT][ValueType.FLOAT][Op.SUB] = ValueType.FLOAT;
@@ -46,6 +48,7 @@ cube[ValueType.INT][ValueType.FLOAT][Op.GT] = ValueType.INT;
 cube[ValueType.INT][ValueType.FLOAT][Op.LT] = ValueType.INT;
 cube[ValueType.INT][ValueType.FLOAT][Op.GTE] = ValueType.INT;
 cube[ValueType.INT][ValueType.FLOAT][Op.LTE] = ValueType.INT;
+cube[ValueType.INT][ValueType.FLOAT][Op.ASSIGN] = ValueType.INT;
 
 cube[ValueType.FLOAT][ValueType.INT][Op.ADD] = ValueType.FLOAT;
 cube[ValueType.FLOAT][ValueType.INT][Op.SUB] = ValueType.FLOAT;
@@ -57,6 +60,7 @@ cube[ValueType.FLOAT][ValueType.INT][Op.GT] = ValueType.INT;
 cube[ValueType.FLOAT][ValueType.INT][Op.LT] = ValueType.INT;
 cube[ValueType.FLOAT][ValueType.INT][Op.GTE] = ValueType.INT;
 cube[ValueType.FLOAT][ValueType.INT][Op.LTE] = ValueType.INT;
+cube[ValueType.FLOAT][ValueType.INT][Op.ASSIGN] = ValueType.FLOAT;
 
 cube[ValueType.FLOAT][ValueType.FLOAT][Op.ADD] = ValueType.FLOAT;
 cube[ValueType.FLOAT][ValueType.FLOAT][Op.SUB] = ValueType.FLOAT;
@@ -68,6 +72,7 @@ cube[ValueType.FLOAT][ValueType.FLOAT][Op.GT] = ValueType.INT;
 cube[ValueType.FLOAT][ValueType.FLOAT][Op.LT] = ValueType.INT;
 cube[ValueType.FLOAT][ValueType.FLOAT][Op.GTE] = ValueType.INT;
 cube[ValueType.FLOAT][ValueType.FLOAT][Op.LTE] = ValueType.INT;
+cube[ValueType.FLOAT][ValueType.FLOAT][Op.ASSIGN] = ValueType.FLOAT;
 
 cube[ValueType.CHAR][ValueType.CHAR][Op.EQ] = ValueType.INT;
 cube[ValueType.CHAR][ValueType.CHAR][Op.NEQ] = ValueType.INT;
@@ -75,5 +80,6 @@ cube[ValueType.CHAR][ValueType.CHAR][Op.GT] = ValueType.INT;
 cube[ValueType.CHAR][ValueType.CHAR][Op.LT] = ValueType.INT;
 cube[ValueType.CHAR][ValueType.CHAR][Op.GTE] = ValueType.INT;
 cube[ValueType.CHAR][ValueType.CHAR][Op.LTE] = ValueType.INT;
+cube[ValueType.CHAR][ValueType.CHAR][Op.ASSIGN] = ValueType.CHAR;
 
 export const SemanticCube = cube;
