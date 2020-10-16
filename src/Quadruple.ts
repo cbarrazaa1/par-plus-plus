@@ -27,7 +27,7 @@ export type Quadruple = {
   left: number | null;
   right: number | null;
   result: number | null;
-}
+};
 
 export class QuadrupleContext {
   public quads: Quadruple[] = [];
@@ -35,10 +35,12 @@ export class QuadrupleContext {
   public operators: Stack<Op | null> = new Stack();
   public jumps: Stack<number> = new Stack();
 
-  public create(action: QuadrupleAction, 
-    left: number | null, 
-    right: number | null, 
-    result: number | null): void {
+  public create(
+    action: QuadrupleAction,
+    left: number | null,
+    right: number | null,
+    result: number | null,
+  ): void {
     this.quads.push({
       action,
       left,

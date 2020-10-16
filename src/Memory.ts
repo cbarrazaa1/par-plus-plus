@@ -1,4 +1,4 @@
-import { NumberLiteralType } from 'typescript';
+import {NumberLiteralType} from 'typescript';
 import {ValueType} from './SymbolTables';
 
 const GLOBAL_INT = 1000;
@@ -23,7 +23,7 @@ export enum MemoryType {
   Local,
   Temp,
   Constant,
-};
+}
 
 // TODO: validar rangos al agregar
 export class MemoryContext {
@@ -44,7 +44,7 @@ export class MemoryContext {
   private constChars: number = CONST_CHAR;
   private constString: number = CONST_STR;
 
-  public newVar(type: ValueType, memType: MemoryType): number{
+  public newVar(type: ValueType, memType: MemoryType): number {
     switch (type) {
       case ValueType.INT:
         return this.newInt(memType);
@@ -53,7 +53,6 @@ export class MemoryContext {
       case ValueType.CHAR:
         return this.newChar(memType);
     }
-
   }
 
   public newInt(type: MemoryType): number {
@@ -112,26 +111,29 @@ export class MemoryContext {
   }
 
   public getTypeForAddress(addr: number): ValueType {
-    if (addr >= GLOBAL_INT && addr < GLOBAL_FLOAT ||
-        addr >= LOCAL_INT && addr < LOCAL_FLOAT ||
-        addr >= TEMP_INT && addr < TEMP_FLOAT ||
-        addr >= CONST_INT && addr < CONST_FLOAT) {
+    if (
+      (addr >= GLOBAL_INT && addr < GLOBAL_FLOAT) ||
+      (addr >= LOCAL_INT && addr < LOCAL_FLOAT) ||
+      (addr >= TEMP_INT && addr < TEMP_FLOAT) ||
+      (addr >= CONST_INT && addr < CONST_FLOAT)
+    ) {
       return ValueType.INT;
-          
-    } else if (addr >= GLOBAL_FLOAT && addr < GLOBAL_CHAR || 
-      addr >= LOCAL_FLOAT && addr < LOCAL_CHAR || 
-      addr >= TEMP_FLOAT && addr < TEMP_CHAR || 
-      addr >= CONST_FLOAT && addr < CONST_CHAR){
-      return ValueType.FLOAT; 
-       
-    } else if (addr >= GLOBAL_CHAR && addr < LOCAL_INT || 
-      addr >= LOCAL_CHAR && addr < TEMP_INT || 
-      addr >= TEMP_CHAR && addr < CONST_INT || 
-      addr >= CONST_CHAR && addr < CONST_STR){
-        return ValueType.CHAR;  
-      }
-      else if (addr >= CONST_STR && addr < CONST_STR + 1000){
-        return ValueType.STRING
-      }
+    } else if (
+      (addr >= GLOBAL_FLOAT && addr < GLOBAL_CHAR) ||
+      (addr >= LOCAL_FLOAT && addr < LOCAL_CHAR) ||
+      (addr >= TEMP_FLOAT && addr < TEMP_CHAR) ||
+      (addr >= CONST_FLOAT && addr < CONST_CHAR)
+    ) {
+      return ValueType.FLOAT;
+    } else if (
+      (addr >= GLOBAL_CHAR && addr < LOCAL_INT) ||
+      (addr >= LOCAL_CHAR && addr < TEMP_INT) ||
+      (addr >= TEMP_CHAR && addr < CONST_INT) ||
+      (addr >= CONST_CHAR && addr < CONST_STR)
+    ) {
+      return ValueType.CHAR;
+    } else if (addr >= CONST_STR && addr < CONST_STR + 1000) {
+      return ValueType.STRING;
+    }
   }
 }

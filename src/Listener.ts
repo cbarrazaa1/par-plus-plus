@@ -1,10 +1,34 @@
 import {ParPlusPlusListener} from './antlr/ParPlusPlusListener';
-import { FunctionContext, Func_paramsContext, ProgramContext, TypeContext, VarsContext, ExprContext, Exp1Context, Exp2Context, Exp3Context, Exp4Context, Var_id_declContext, Exp5Context, Exp6Context, Addsub_opContext, Muldiv_opContext, Eq_opContext, Rel_opContext, Or_opContext, And_opContext, If_exprContext, If_stmtContext, Else_stmtContext, AssignmentContext } from './antlr/ParPlusPlusParser';
-import { FuncTable, stringToValueType, ValueType } from './SymbolTables';
+import {
+  FunctionContext,
+  Func_paramsContext,
+  ProgramContext,
+  TypeContext,
+  VarsContext,
+  ExprContext,
+  Exp1Context,
+  Exp2Context,
+  Exp3Context,
+  Exp4Context,
+  Var_id_declContext,
+  Exp5Context,
+  Exp6Context,
+  Addsub_opContext,
+  Muldiv_opContext,
+  Eq_opContext,
+  Rel_opContext,
+  Or_opContext,
+  And_opContext,
+  If_exprContext,
+  If_stmtContext,
+  Else_stmtContext,
+  AssignmentContext,
+} from './antlr/ParPlusPlusParser';
+import {FuncTable, stringToValueType, ValueType} from './SymbolTables';
 import {SemanticCube, Op} from './SemanticCube';
 import {MemoryContext, MemoryType} from './Memory';
 import {QuadrupleContext, QuadrupleAction} from './Quadruple';
-import { createVoidZero, textChangeRangeIsUnchanged } from 'typescript';
+import {createVoidZero, textChangeRangeIsUnchanged} from 'typescript';
 
 export default class Listener implements ParPlusPlusListener {
   private funcTable: FuncTable;
@@ -15,7 +39,7 @@ export default class Listener implements ParPlusPlusListener {
 
   constructor() {
     this.funcTable = {
-      'global': {
+      global: {
         name: 'global',
         type: ValueType.VOID,
         vars: {},
@@ -31,7 +55,7 @@ export default class Listener implements ParPlusPlusListener {
     console.log(this.funcTable);
     console.log(this.quads.quads);
   }
-  
+
   exitType(ctx: TypeContext): void {
     this.currentType = stringToValueType(ctx.text);
   }
@@ -44,7 +68,8 @@ export default class Listener implements ParPlusPlusListener {
       throw new Error(`Variable ${id} already declared.`);
     }
 
-    const memType = this.currentFunc === 'global' ? MemoryType.Global : MemoryType.Local;
+    const memType =
+      this.currentFunc === 'global' ? MemoryType.Global : MemoryType.Local;
 
     this.funcTable[this.currentFunc].vars[id] = {
       name: id,
@@ -55,10 +80,12 @@ export default class Listener implements ParPlusPlusListener {
 
   enterFunction(ctx: FunctionContext): void {
     const name = ctx.ID().text;
-    const type = stringToValueType(ctx.type() != null ? ctx.type().text : 'void');
+    const type = stringToValueType(
+      ctx.type() != null ? ctx.type().text : 'void',
+    );
     this.currentFunc = name;
     this.memory.resetLocals();
-    
+
     // check if exists
     if (this.funcTable[name] != null) {
       throw new Error(`Function ${name} already declared.`);
@@ -67,7 +94,7 @@ export default class Listener implements ParPlusPlusListener {
     this.funcTable[name] = {
       name,
       type,
-      vars: {}
+      vars: {},
     };
   }
 
@@ -93,10 +120,12 @@ export default class Listener implements ParPlusPlusListener {
       };
     }
   }
- 
+
   exitAssignment(ctx: AssignmentContext): void {
-    let variable = this.funcTable[this.currentFunc].vars[ctx.var_id().ID().text];
-    
+    let variable = this.funcTable[this.currentFunc].vars[
+      ctx.var_id().ID().text
+    ];
+
     // check if exists
     if (variable == null) {
       variable = this.funcTable['global'].vars[ctx.var_id().ID().text];
@@ -106,9 +135,14 @@ export default class Listener implements ParPlusPlusListener {
     }
 
     const type = this.memory.getTypeForAddress(this.quads.operands.peek());
-    
-    if (SemanticCube[variable.type][type][Op.ASSIGN] != null){
-      this.quads.create(QuadrupleAction.ASSIGN, this.quads.operands.pop(), null, variable.virtualDir);
+
+    if (SemanticCube[variable.type][type][Op.ASSIGN] != null) {
+      this.quads.create(
+        QuadrupleAction.ASSIGN,
+        this.quads.operands.pop(),
+        null,
+        variable.virtualDir,
+      );
     } else {
       throw new Error('Type mismatch');
     }
@@ -143,7 +177,7 @@ export default class Listener implements ParPlusPlusListener {
       this.quads.operands.push(result);
     }
   }
-  
+
   exitExp2(ctx: Exp2Context): void {
     if (this.quads.operators.peek() == null) {
       return;
@@ -173,7 +207,10 @@ export default class Listener implements ParPlusPlusListener {
       return;
     }
 
-    if (this.quads.operators.peek() === Op.EQ || this.quads.operators.peek() === Op.NEQ) {
+    if (
+      this.quads.operators.peek() === Op.EQ ||
+      this.quads.operators.peek() === Op.NEQ
+    ) {
       const right = this.quads.operands.pop();
       const left = this.quads.operands.pop();
       const op = this.quads.operators.pop();
@@ -198,27 +235,28 @@ export default class Listener implements ParPlusPlusListener {
       return;
     }
 
-    if (this.quads.operators.peek() === Op.LT 
-    || this.quads.operators.peek() === Op.GT 
-    || this.quads.operators.peek() === Op.GTE 
-    || this.quads.operators.peek() === Op.LTE) {
-
+    if (
+      this.quads.operators.peek() === Op.LT ||
+      this.quads.operators.peek() === Op.GT ||
+      this.quads.operators.peek() === Op.GTE ||
+      this.quads.operators.peek() === Op.LTE
+    ) {
       const right = this.quads.operands.pop();
       const left = this.quads.operands.pop();
       const op = this.quads.operators.pop();
       const rightType = this.memory.getTypeForAddress(right);
       const leftType = this.memory.getTypeForAddress(left);
       const resultType = SemanticCube[leftType][rightType][op];
-      
+
       const result = this.memory.newVar(resultType, MemoryType.Temp);
       let action = QuadrupleAction.LT;
-      if (op == Op.LT){
+      if (op == Op.LT) {
         action = QuadrupleAction.LT;
-      } else if (op == Op.GT){
+      } else if (op == Op.GT) {
         action = QuadrupleAction.GT;
-      } else if (op == Op.LTE){
+      } else if (op == Op.LTE) {
         action = QuadrupleAction.LTE;
-      } else if (op == Op.GTE){
+      } else if (op == Op.GTE) {
         action = QuadrupleAction.GTE;
       }
 
@@ -232,7 +270,10 @@ export default class Listener implements ParPlusPlusListener {
       return;
     }
 
-    if (this.quads.operators.peek() === Op.ADD || this.quads.operators.peek() === Op.SUB) {
+    if (
+      this.quads.operators.peek() === Op.ADD ||
+      this.quads.operators.peek() === Op.SUB
+    ) {
       const right = this.quads.operands.pop();
       const left = this.quads.operands.pop();
       const op = this.quads.operators.pop();
@@ -262,7 +303,7 @@ export default class Listener implements ParPlusPlusListener {
     if (ctx.var_id() != null) {
       const name = ctx.var_id().ID().text;
       let variable = this.funcTable[this.currentFunc].vars[name];
-      
+
       // check if exists
       if (variable == null) {
         if (this.funcTable['global'].vars[name] == null) {
@@ -279,20 +320,23 @@ export default class Listener implements ParPlusPlusListener {
       this.quads.operands.push(this.memory.newFloat(MemoryType.Constant));
     } else if (ctx.CHAR_VAL() != null) {
       this.quads.operands.push(this.memory.newChar(MemoryType.Constant));
-    } 
+    }
 
     if (this.quads.operators.peek() == null) {
       return;
     }
 
-    if (this.quads.operators.peek() == Op.MUL || this.quads.operators.peek() == Op.DIV){
+    if (
+      this.quads.operators.peek() == Op.MUL ||
+      this.quads.operators.peek() == Op.DIV
+    ) {
       const right = this.quads.operands.pop();
       const left = this.quads.operands.pop();
       const op = this.quads.operators.pop();
       const rightType = this.memory.getTypeForAddress(right);
       const leftType = this.memory.getTypeForAddress(left);
-      const resultType = SemanticCube[leftType][rightType][op]
-      
+      const resultType = SemanticCube[leftType][rightType][op];
+
       // check if types are compatible
       if (resultType == null) {
         throw new Error('Type mismatch');
@@ -347,11 +391,18 @@ export default class Listener implements ParPlusPlusListener {
   }
 
   exitIf_expr(ctx: If_exprContext): void {
-    if (this.memory.getTypeForAddress(this.quads.operands.peek()) != ValueType.INT) {
+    if (
+      this.memory.getTypeForAddress(this.quads.operands.peek()) != ValueType.INT
+    ) {
       throw new Error('Type mismatch in if-statement');
     }
 
-    this.quads.create(QuadrupleAction.GOTOF, this.quads.operands.pop(), null, null);
+    this.quads.create(
+      QuadrupleAction.GOTOF,
+      this.quads.operands.pop(),
+      null,
+      null,
+    );
     this.quads.jumps.push(this.quads.size() - 1);
   }
 
@@ -369,7 +420,7 @@ export default class Listener implements ParPlusPlusListener {
     this.quads.create(QuadrupleAction.GOTO, null, null, null);
     const end = this.quads.jumps.pop();
     const size = this.quads.size();
-    this.quads.jumps.push(size-1);
+    this.quads.jumps.push(size - 1);
     this.quads.fill(end, size);
   }
 }
