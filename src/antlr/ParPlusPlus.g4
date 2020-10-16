@@ -49,7 +49,10 @@ assignment : var_id '=' expr ';'
 return_stmt : 'return' '(' expr ')' ';'
   ;
 
-if_stmt : 'if' '(' expr ')' 'then' block else_stmt
+if_expr : 'if' '(' expr ')' 'then'
+  ;
+
+if_stmt : if_expr block else_stmt
   ;
 
 else_stmt : ( 'else' block )?
@@ -73,10 +76,16 @@ addsub_op : '+' | '-'
 muldiv_op : '*' | '/'
   ;
 
-expr : exp1 ( '|' expr )*
+or_op : '|'
   ;
 
-exp1 : exp2 ( '&' exp1 )*
+and_op : '&'
+  ;
+
+expr : exp1 ( or_op expr )*
+  ;
+
+exp1 : exp2 ( and_op exp1 )*
   ;
 
 exp2 : exp3 ( eq_op exp3 )?

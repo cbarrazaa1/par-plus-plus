@@ -16,6 +16,7 @@ import { BlockContext } from "./ParPlusPlusParser";
 import { StatementContext } from "./ParPlusPlusParser";
 import { AssignmentContext } from "./ParPlusPlusParser";
 import { Return_stmtContext } from "./ParPlusPlusParser";
+import { If_exprContext } from "./ParPlusPlusParser";
 import { If_stmtContext } from "./ParPlusPlusParser";
 import { Else_stmtContext } from "./ParPlusPlusParser";
 import { While_stmtContext } from "./ParPlusPlusParser";
@@ -24,6 +25,8 @@ import { Rel_opContext } from "./ParPlusPlusParser";
 import { Eq_opContext } from "./ParPlusPlusParser";
 import { Addsub_opContext } from "./ParPlusPlusParser";
 import { Muldiv_opContext } from "./ParPlusPlusParser";
+import { Or_opContext } from "./ParPlusPlusParser";
+import { And_opContext } from "./ParPlusPlusParser";
 import { ExprContext } from "./ParPlusPlusParser";
 import { Exp1Context } from "./ParPlusPlusParser";
 import { Exp2Context } from "./ParPlusPlusParser";
@@ -189,6 +192,17 @@ export interface ParPlusPlusListener extends ParseTreeListener {
 	exitReturn_stmt?: (ctx: Return_stmtContext) => void;
 
 	/**
+	 * Enter a parse tree produced by `ParPlusPlusParser.if_expr`.
+	 * @param ctx the parse tree
+	 */
+	enterIf_expr?: (ctx: If_exprContext) => void;
+	/**
+	 * Exit a parse tree produced by `ParPlusPlusParser.if_expr`.
+	 * @param ctx the parse tree
+	 */
+	exitIf_expr?: (ctx: If_exprContext) => void;
+
+	/**
 	 * Enter a parse tree produced by `ParPlusPlusParser.if_stmt`.
 	 * @param ctx the parse tree
 	 */
@@ -275,6 +289,28 @@ export interface ParPlusPlusListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	exitMuldiv_op?: (ctx: Muldiv_opContext) => void;
+
+	/**
+	 * Enter a parse tree produced by `ParPlusPlusParser.or_op`.
+	 * @param ctx the parse tree
+	 */
+	enterOr_op?: (ctx: Or_opContext) => void;
+	/**
+	 * Exit a parse tree produced by `ParPlusPlusParser.or_op`.
+	 * @param ctx the parse tree
+	 */
+	exitOr_op?: (ctx: Or_opContext) => void;
+
+	/**
+	 * Enter a parse tree produced by `ParPlusPlusParser.and_op`.
+	 * @param ctx the parse tree
+	 */
+	enterAnd_op?: (ctx: And_opContext) => void;
+	/**
+	 * Exit a parse tree produced by `ParPlusPlusParser.and_op`.
+	 * @param ctx the parse tree
+	 */
+	exitAnd_op?: (ctx: And_opContext) => void;
 
 	/**
 	 * Enter a parse tree produced by `ParPlusPlusParser.expr`.

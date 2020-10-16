@@ -16,6 +16,7 @@ import { BlockContext } from "./ParPlusPlusParser";
 import { StatementContext } from "./ParPlusPlusParser";
 import { AssignmentContext } from "./ParPlusPlusParser";
 import { Return_stmtContext } from "./ParPlusPlusParser";
+import { If_exprContext } from "./ParPlusPlusParser";
 import { If_stmtContext } from "./ParPlusPlusParser";
 import { Else_stmtContext } from "./ParPlusPlusParser";
 import { While_stmtContext } from "./ParPlusPlusParser";
@@ -24,6 +25,8 @@ import { Rel_opContext } from "./ParPlusPlusParser";
 import { Eq_opContext } from "./ParPlusPlusParser";
 import { Addsub_opContext } from "./ParPlusPlusParser";
 import { Muldiv_opContext } from "./ParPlusPlusParser";
+import { Or_opContext } from "./ParPlusPlusParser";
+import { And_opContext } from "./ParPlusPlusParser";
 import { ExprContext } from "./ParPlusPlusParser";
 import { Exp1Context } from "./ParPlusPlusParser";
 import { Exp2Context } from "./ParPlusPlusParser";
@@ -140,6 +143,13 @@ export interface ParPlusPlusVisitor<Result> extends ParseTreeVisitor<Result> {
 	visitReturn_stmt?: (ctx: Return_stmtContext) => Result;
 
 	/**
+	 * Visit a parse tree produced by `ParPlusPlusParser.if_expr`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitIf_expr?: (ctx: If_exprContext) => Result;
+
+	/**
 	 * Visit a parse tree produced by `ParPlusPlusParser.if_stmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -194,6 +204,20 @@ export interface ParPlusPlusVisitor<Result> extends ParseTreeVisitor<Result> {
 	 * @return the visitor result
 	 */
 	visitMuldiv_op?: (ctx: Muldiv_opContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by `ParPlusPlusParser.or_op`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitOr_op?: (ctx: Or_opContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by `ParPlusPlusParser.and_op`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitAnd_op?: (ctx: And_opContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `ParPlusPlusParser.expr`.
