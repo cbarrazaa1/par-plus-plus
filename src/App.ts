@@ -7,7 +7,7 @@ import Listener from './Listener';
 import { ParPlusPlusListener } from './antlr/ParPlusPlusListener';
 
 function main(): void {
-  const inputText = readFileSync('test1.ppp', 'utf-8');
+  const inputText = readFileSync('test2.ppp', 'utf-8');
   const inputStream = CharStreams.fromString(inputText);
   const lexer = new ParPlusPlusLexer(inputStream);
   const tokenStream = new CommonTokenStream(lexer);

@@ -3,11 +3,13 @@ export enum ValueType {
   FLOAT,
   CHAR,
   VOID,
+  STRING,
 }
 
 export type VarsTableRow = {
   name: string;
   type: ValueType;
+  virtualDir: number;
 };
 
 export type VarsTable = {[key: string]: VarsTableRow};

@@ -1,12 +1,12 @@
 program Ejemplo2;
 
 var
-  int i, j, p;
+  int a, b, c, d, e, f, g, h;
 
-int module fact(int j)
+int module fact()
   var int i;
 {
-  i = j + (p - j * 2 + j);
+  i = a * (b + c * (d - e * f) / g + h);
   return (i);
 }
 
