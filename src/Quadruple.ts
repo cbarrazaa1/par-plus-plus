@@ -13,7 +13,7 @@ export enum QuadrupleAction {
   GT = '>',
   LT = '<',
   GTE = '>=',
-  LTE = '=<',
+  LTE = '<=',
   ASSIGN = '=',
   GOTOF = 'GOTOF',
   GOTOT = 'GOTOV',
@@ -45,5 +45,13 @@ export class QuadrupleContext {
       right,
       result,
     });
+  }
+
+  public size(): number {
+    return this.quads.length;
+  }
+
+  public fill(quad: number, dest: number): void {
+    this.quads[quad].result = dest;
   }
 }

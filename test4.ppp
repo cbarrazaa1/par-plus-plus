@@ -7,8 +7,8 @@ int module intersects(int lX, int lY, int lW, int lH, int x)
   var int y;
 {
   res = (
-    (x > lX & x < lX + lW) |
-    (y > lY & y < lY + lH)
+    x > lX & x < lX + lW |
+    y > lY & y < lY + lH
   );
 }
 
