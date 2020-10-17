@@ -4,7 +4,7 @@ export type VarsTable = {[key: string]: VarsTableRow};
 export type VarsTableRow = {
   name: string;
   type: ValueType;
-  virtualDir: number;
+  addr: number;
 };
 
 export type FuncTable = {[key: string]: FuncTableRow};

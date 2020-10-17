@@ -112,7 +112,7 @@ export default class Listener implements ParPlusPlusListener {
     this.funcTable[this.currentFunc].vars[id] = {
       name: id,
       type: this.currentType,
-      virtualDir: this.memory.newVar(this.currentType, memType),
+      addr: this.memory.newVar(this.currentType, memType),
     };
   }
 
@@ -155,7 +155,7 @@ export default class Listener implements ParPlusPlusListener {
       this.funcTable[this.currentFunc].vars[name] = {
         name,
         type,
-        virtualDir: this.memory.newVar(type, MemoryType.Local),
+        addr: this.memory.newVar(type, MemoryType.Local),
       };
     }
   }
@@ -173,7 +173,7 @@ export default class Listener implements ParPlusPlusListener {
       QuadrupleAction.ASSIGN,
       this.quads.operands.pop(),
       null,
-      variable.virtualDir,
+      variable.addr,
     );
   }
 
@@ -226,7 +226,7 @@ export default class Listener implements ParPlusPlusListener {
     // check for type of operand to add to stack
     if (ctx.var_id() != null) {
       const variable = this.getVariable(ctx.var_id().ID().text);
-      this.quads.operands.push(variable.virtualDir);
+      this.quads.operands.push(variable.addr);
     } else if (ctx.INT_VAL() != null) {
       this.quads.operands.push(this.memory.newInt(MemoryType.Constant));
     } else if (ctx.FLOAT_VAL() != null) {
