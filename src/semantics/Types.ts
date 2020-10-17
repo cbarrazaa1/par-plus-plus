@@ -6,22 +6,6 @@ export enum ValueType {
   STRING,
 }
 
-export type VarsTableRow = {
-  name: string;
-  type: ValueType;
-  virtualDir: number;
-};
-
-export type VarsTable = {[key: string]: VarsTableRow};
-
-export type FuncTableRow = {
-  name: string;
-  type: ValueType;
-  vars: VarsTable;
-};
-
-export type FuncTable = {[key: string]: FuncTableRow};
-
 export function stringToValueType(str: string): ValueType {
   switch (str) {
     case 'int':

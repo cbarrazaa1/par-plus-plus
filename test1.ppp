@@ -1,7 +1,7 @@
 program Ejemplo;
 
 var
-  int i, j, p;
+  int i, j, p, k;
   int arreglo[10];
   float valor;
   int matriz[3][8];

@@ -6,10 +6,10 @@ var
 int module fact()
   var int i;
 {
-  i = a & b | c & d
+  i = ((a*b-c*d)>c+d*e/f)&(g*h-j>l-a)&b+c>d*f;
   return (i);
 }
 
 main() {
-  i = fact(10);
+
 }

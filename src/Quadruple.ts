@@ -1,5 +1,5 @@
 import {Stack} from 'typescript-collections';
-import {Op} from './SemanticCube';
+import {Op} from './semantics/SemanticCube';
 
 export enum QuadrupleAction {
   ADD = '+',
@@ -16,7 +16,7 @@ export enum QuadrupleAction {
   LTE = '<=',
   ASSIGN = '=',
   GOTOF = 'GOTOF',
-  GOTOT = 'GOTOV',
+  GOTOT = 'GOTOT',
   GOTO = 'GOTO',
   WRITE = 'WRITE',
   READ = 'READ',
@@ -30,7 +30,7 @@ export type Quadruple = {
 };
 
 export class QuadrupleContext {
-  public quads: Quadruple[] = [];
+  private quads: Quadruple[] = [];
   public operands: Stack<number> = new Stack();
   public operators: Stack<Op | null> = new Stack();
   public jumps: Stack<number> = new Stack();
@@ -55,5 +55,9 @@ export class QuadrupleContext {
 
   public fill(quad: number, dest: number): void {
     this.quads[quad].result = dest;
+  }
+
+  public print(): void {
+    console.table(this.quads);
   }
 }

@@ -1,4 +1,4 @@
-import {ValueType} from './SymbolTables';
+import {ValueType} from './Types';
 
 export enum Op {
   ADD, // +

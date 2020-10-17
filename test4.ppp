@@ -4,7 +4,7 @@ var
   int x, y;
 
 int module intersects(int lX, int lY, int lW, int lH, int x)
-  var int y;
+  var int y, res;
 {
   res = (
     x > lX & x < lX + lW |

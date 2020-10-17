@@ -1,28 +1,54 @@
-import {NumberLiteralType} from 'typescript';
-import {ValueType} from './SymbolTables';
+import {ValueType} from './semantics/Types';
 
-const GLOBAL_INT = 1000;
-const GLOBAL_FLOAT = 2000;
-const GLOBAL_CHAR = 3000;
+const GLOBAL_INT = 1000,
+  GLOBAL_FLOAT = 2000,
+  GLOBAL_CHAR = 3000;
 
-const LOCAL_INT = 4000;
-const LOCAL_FLOAT = 5000;
-const LOCAL_CHAR = 6000;
+const LOCAL_INT = 4000,
+  LOCAL_FLOAT = 5000,
+  LOCAL_CHAR = 6000;
 
-const TEMP_INT = 7000;
-const TEMP_FLOAT = 8000;
-const TEMP_CHAR = 9000;
+const TEMP_INT = 7000,
+  TEMP_FLOAT = 8000, 
+  TEMP_CHAR = 9000;
 
-const CONST_INT = 10000;
-const CONST_FLOAT = 11000;
-const CONST_CHAR = 12000;
-const CONST_STR = 13000;
+const CONST_INT = 10000, 
+  CONST_FLOAT = 11000, 
+  CONST_CHAR = 12000,
+  CONST_STR = 13000;
 
 export enum MemoryType {
   Global,
   Local,
   Temp,
   Constant,
+}
+
+export function getTypeForAddress(addr: number): ValueType {
+  if (
+    (addr >= GLOBAL_INT && addr < GLOBAL_FLOAT) ||
+    (addr >= LOCAL_INT && addr < LOCAL_FLOAT) ||
+    (addr >= TEMP_INT && addr < TEMP_FLOAT) ||
+    (addr >= CONST_INT && addr < CONST_FLOAT)
+  ) {
+    return ValueType.INT;
+  } else if (
+    (addr >= GLOBAL_FLOAT && addr < GLOBAL_CHAR) ||
+    (addr >= LOCAL_FLOAT && addr < LOCAL_CHAR) ||
+    (addr >= TEMP_FLOAT && addr < TEMP_CHAR) ||
+    (addr >= CONST_FLOAT && addr < CONST_CHAR)
+  ) {
+    return ValueType.FLOAT;
+  } else if (
+    (addr >= GLOBAL_CHAR && addr < LOCAL_INT) ||
+    (addr >= LOCAL_CHAR && addr < TEMP_INT) ||
+    (addr >= TEMP_CHAR && addr < CONST_INT) ||
+    (addr >= CONST_CHAR && addr < CONST_STR)
+  ) {
+    return ValueType.CHAR;
+  } else if (addr >= CONST_STR && addr < CONST_STR + 1000) {
+    return ValueType.STRING;
+  }
 }
 
 // TODO: validar rangos al agregar
@@ -42,7 +68,7 @@ export class MemoryContext {
   private constInts: number = CONST_INT;
   private constFloats: number = CONST_FLOAT;
   private constChars: number = CONST_CHAR;
-  private constString: number = CONST_STR;
+  private constStrings: number = CONST_STR;
 
   public newVar(type: ValueType, memType: MemoryType): number {
     switch (type) {
@@ -66,8 +92,6 @@ export class MemoryContext {
       case MemoryType.Constant:
         return this.constInts++;
     }
-
-    throw new Error('Unknown memory type');
   }
 
   public newFloat(type: MemoryType): number {
@@ -81,8 +105,6 @@ export class MemoryContext {
       case MemoryType.Constant:
         return this.constFloats++;
     }
-
-    throw new Error('Unknown memory type');
   }
 
   public newChar(type: MemoryType): number {
@@ -96,44 +118,15 @@ export class MemoryContext {
       case MemoryType.Constant:
         return this.constChars++;
     }
-
-    throw new Error('Unknown memory type');
   }
 
   public newString(): number {
-    return this.constString++;
+    return this.constStrings++;
   }
 
   public resetLocals(): void {
     this.localInts = LOCAL_INT;
     this.localFloats = LOCAL_FLOAT;
     this.localChars = LOCAL_CHAR;
-  }
-
-  public getTypeForAddress(addr: number): ValueType {
-    if (
-      (addr >= GLOBAL_INT && addr < GLOBAL_FLOAT) ||
-      (addr >= LOCAL_INT && addr < LOCAL_FLOAT) ||
-      (addr >= TEMP_INT && addr < TEMP_FLOAT) ||
-      (addr >= CONST_INT && addr < CONST_FLOAT)
-    ) {
-      return ValueType.INT;
-    } else if (
-      (addr >= GLOBAL_FLOAT && addr < GLOBAL_CHAR) ||
-      (addr >= LOCAL_FLOAT && addr < LOCAL_CHAR) ||
-      (addr >= TEMP_FLOAT && addr < TEMP_CHAR) ||
-      (addr >= CONST_FLOAT && addr < CONST_CHAR)
-    ) {
-      return ValueType.FLOAT;
-    } else if (
-      (addr >= GLOBAL_CHAR && addr < LOCAL_INT) ||
-      (addr >= LOCAL_CHAR && addr < TEMP_INT) ||
-      (addr >= TEMP_CHAR && addr < CONST_INT) ||
-      (addr >= CONST_CHAR && addr < CONST_STR)
-    ) {
-      return ValueType.CHAR;
-    } else if (addr >= CONST_STR && addr < CONST_STR + 1000) {
-      return ValueType.STRING;
-    }
   }
 }

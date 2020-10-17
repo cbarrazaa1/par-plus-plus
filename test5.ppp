@@ -7,7 +7,7 @@ main() {
   a = b + c;
   if (a > b - d) then {
     b = c + d;
-    if (b > c) {
+    if (b > c) then {
       d = a + c;
     }
   } else {
