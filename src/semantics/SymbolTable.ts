@@ -16,5 +16,8 @@ export type FuncTableRow = {
 
 export function printFuncTable(table: FuncTable): void {
   console.table(table);
-  Object.values(table).forEach((row) => console.table(row));
+  Object.values(table).forEach((row) => {
+    console.log(`--${row.name.toUpperCase()} VARIABLES--`);
+    console.table(row.vars);
+  });
 }
