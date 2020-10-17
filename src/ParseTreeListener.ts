@@ -18,6 +18,8 @@ import {Op, SemanticCube} from './semantics/SemanticCube';
 import {FuncTable, printFuncTable, VarsTableRow} from './semantics/SymbolTable';
 import {stringToValueType, ValueType} from './semantics/Types';
 
+const FalseBottom = null;
+
 export default class Listener implements ParPlusPlusListener {
   private funcTable: FuncTable;
   private currentType: ValueType;
@@ -54,7 +56,7 @@ export default class Listener implements ParPlusPlusListener {
 
   private expHelper(opActionPairs: {op: Op; action: QuadrupleAction}[]): void {
     // if we're on false bottom, skip
-    if (this.quads.operators.peek() == null) {
+    if (this.quads.operators.peek() == FalseBottom) {
       return;
     }
 
@@ -179,7 +181,7 @@ export default class Listener implements ParPlusPlusListener {
 
   exitExpr(): void {
     // remove stack false bottom
-    if (this.quads.operators.peek() == null) {
+    if (this.quads.operators.peek() == FalseBottom) {
       this.quads.operators.pop();
     }
   }
@@ -218,7 +220,7 @@ export default class Listener implements ParPlusPlusListener {
   enterExp6(ctx: Exp6Context): void {
     // add false bottom if we reach nested expression
     if (ctx.expr() != null) {
-      this.quads.operators.push(null);
+      this.quads.operators.push(FalseBottom);
     }
   }
 
