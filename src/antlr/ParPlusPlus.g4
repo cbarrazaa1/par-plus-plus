@@ -58,10 +58,22 @@ if_stmt : if_expr block else_stmt
 else_stmt : ( 'else' block )?
   ;
 
-while_stmt : 'while' '(' expr ')' 'do' block
+while_expr : 'while' '(' expr ')' 'do'
   ;
 
-for_stmt : 'for' var_id '=' expr 'to' expr 'do' block
+while_stmt : while_expr block
+  ;
+
+for_id : 'for' var_id
+  ;
+
+for_expr1 : '=' expr 'to'
+  ;
+
+for_expr2 : expr 'do'
+  ;
+
+for_stmt : for_id for_expr1 for_expr2 block
   ;
 
 rel_op : '>' | '<' | '<=' | '>='
@@ -123,7 +135,10 @@ input_args : var_id ( ',' var_id )*
 output_stmt : 'write' '(' output_args ')' ';'
   ;
 
-output_args : ( expr | STR_VAL ) ( ',' ( expr | STR_VAL ) )*
+output_arg : ( expr | STR_VAL )
+  ;
+
+output_args : output_arg ( ',' output_arg )*
   ;
 
 main_function : 'main()' block

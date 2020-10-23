@@ -1,3 +1,4 @@
+import { Stack } from 'typescript-collections';
 import {ParPlusPlusListener} from './antlr/ParPlusPlusListener';
 import {
   Addsub_opContext,
@@ -5,12 +6,21 @@ import {
   Else_stmtContext,
   Eq_opContext,
   Exp6Context,
+  Input_argsContext,
   FunctionContext,
   Func_paramsContext,
   Muldiv_opContext,
+  Output_argsContext,
+  Output_argContext,
   Rel_opContext,
   TypeContext,
   Var_id_declContext,
+  While_stmtContext,
+  While_exprContext,
+  For_idContext,
+  For_expr1Context,
+  For_expr2Context,
+  For_stmtContext,
 } from './antlr/ParPlusPlusParser';
 import {getTypeForAddress, MemoryContext, MemoryType} from './Memory';
 import {QuadrupleAction, QuadrupleContext} from './Quadruple';
@@ -26,19 +36,23 @@ export default class Listener implements ParPlusPlusListener {
   private currentFunc: string;
   private memory: MemoryContext;
   private quads: QuadrupleContext;
+  private forControlVariables: Stack<number>;
 
   constructor() {
     this.funcTable = {
       global: {
         name: 'global',
         type: ValueType.VOID,
+        params: [],
         vars: {},
+        quadNumber: 0,
       },
     };
     this.currentType = ValueType.VOID;
     this.currentFunc = 'global';
     this.memory = new MemoryContext();
     this.quads = new QuadrupleContext();
+    this.forControlVariables = new Stack();
   }
 
   private getVariable(name: string): VarsTableRow {
@@ -136,6 +150,8 @@ export default class Listener implements ParPlusPlusListener {
       name,
       type,
       vars: {},
+      params: [],
+      quadNumber: this.quads.size(),
     };
   }
 
@@ -159,6 +175,8 @@ export default class Listener implements ParPlusPlusListener {
         type,
         addr: this.memory.newVar(type, MemoryType.Local),
       };
+
+      this.funcTable[this.currentFunc].params.push(type);
     }
   }
 
@@ -315,5 +333,115 @@ export default class Listener implements ParPlusPlusListener {
     const size = this.quads.size();
     this.quads.jumps.push(size - 1);
     this.quads.fill(end, size);
+  }
+
+  exitOutput_arg(ctx: Output_argContext): void {
+    const string = ctx.STR_VAL();
+
+    if (string != null) {
+      this.quads.create(
+        QuadrupleAction.WRITE, 
+        null, 
+        null, 
+        this.memory.newString(),
+      );
+    } else {
+      this.quads.create(
+        QuadrupleAction.WRITE, 
+        null, 
+        null, 
+        this.quads.operands.pop());
+    }
+  }
+
+  exitInput_args(ctx: Input_argsContext): void {
+    const ids = ctx.var_id();
+
+    for (let i = 0; i < ids.length; i++) {
+      const variable = this.getVariable(ids[i].text);
+      this.quads.create(
+        QuadrupleAction.READ, 
+        null, 
+        null, 
+        variable.addr);
+    }
+  }
+
+  enterWhile_stmt(ctx: While_stmtContext): void {
+    this.quads.jumps.push(this.quads.size());
+  }
+  
+  exitWhile_stmt(ctx: While_stmtContext): void {
+    const end = this.quads.jumps.pop();
+    const ret = this.quads.jumps.pop();
+    this.quads.create(QuadrupleAction.GOTO, null, null, ret);
+    this.quads.fill(end, this.quads.size());
+  }
+  
+  exitWhile_expr(ctx: While_exprContext): void {
+    const result = this.quads.operands.pop();
+    const type = getTypeForAddress(result);
+
+    // check if types match
+    if (type != ValueType.INT) {
+      throw new Error('Type mismatch');
+    } else {
+      this.quads.create(QuadrupleAction.GOTOF, result, null, null);
+      this.quads.jumps.push(this.quads.size() - 1);
+    }
+  }
+
+  exitFor_id(ctx: For_idContext): void {
+    const variable = this.getVariable(ctx.var_id().text);
+    const type = getTypeForAddress(variable.addr);
+
+    if (type != ValueType.INT) {
+      throw new Error('Type mismatch');
+    }
+
+    this.quads.operands.push(variable.addr);
+  }
+
+  exitFor_expr1(ctx: For_expr1Context): void {
+    const exp = this.quads.operands.pop();
+    const type = getTypeForAddress(exp);
+    if (type != ValueType.INT && type != ValueType.FLOAT){
+      throw new Error('Type mismatch');
+    } else {
+      const controlVar = this.quads.operands.peek();
+      const controlType = getTypeForAddress(this.quads.operands.peek());
+      const resultType = SemanticCube[controlType][type][Op.ASSIGN];
+      if (resultType == null){
+        throw new Error('Type mismatch');
+      } else {
+        this.quads.create(QuadrupleAction.ASSIGN, exp, null, this.quads.operands.peek());
+      }
+    }
+    
+  }
+
+  exitFor_expr2(ctx: For_expr2Context): void {
+    const exp = this.quads.operands.pop();
+    if (getTypeForAddress(exp) != ValueType.INT) {
+      throw new Error('Type mismatch.');
+    }
+
+    const temp = this.memory.newInt(MemoryType.Temp);
+    this.quads.create(QuadrupleAction.LT, this.quads.operands.peek(), exp, temp);
+    this.quads.jumps.push(this.quads.size() - 1);
+    this.quads.create(QuadrupleAction.GOTOF, temp, null, null);
+    this.quads.jumps.push(this.quads.size() - 1);
+  }
+
+  exitFor_stmt(ctx: For_stmtContext): void {
+    const controlVar = this.quads.operands.pop();
+    const temp = this.memory.newInt(MemoryType.Temp);
+    this.quads.create(QuadrupleAction.ADD, controlVar, this.memory.newInt(MemoryType.Constant), temp);
+    this.quads.create(QuadrupleAction.ASSIGN, temp, null, controlVar);
+
+    const end = this.quads.jumps.pop();
+    const ret = this.quads.jumps.pop();
+    this.quads.create(QuadrupleAction.GOTO, null, null, ret);
+    this.quads.fill(end, this.quads.size());
   }
 }

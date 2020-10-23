@@ -19,7 +19,11 @@ import { Return_stmtContext } from "./ParPlusPlusParser";
 import { If_exprContext } from "./ParPlusPlusParser";
 import { If_stmtContext } from "./ParPlusPlusParser";
 import { Else_stmtContext } from "./ParPlusPlusParser";
+import { While_exprContext } from "./ParPlusPlusParser";
 import { While_stmtContext } from "./ParPlusPlusParser";
+import { For_idContext } from "./ParPlusPlusParser";
+import { For_expr1Context } from "./ParPlusPlusParser";
+import { For_expr2Context } from "./ParPlusPlusParser";
 import { For_stmtContext } from "./ParPlusPlusParser";
 import { Rel_opContext } from "./ParPlusPlusParser";
 import { Eq_opContext } from "./ParPlusPlusParser";
@@ -39,6 +43,7 @@ import { Func_call_argsContext } from "./ParPlusPlusParser";
 import { Input_stmtContext } from "./ParPlusPlusParser";
 import { Input_argsContext } from "./ParPlusPlusParser";
 import { Output_stmtContext } from "./ParPlusPlusParser";
+import { Output_argContext } from "./ParPlusPlusParser";
 import { Output_argsContext } from "./ParPlusPlusParser";
 import { Main_functionContext } from "./ParPlusPlusParser";
 
@@ -225,6 +230,17 @@ export interface ParPlusPlusListener extends ParseTreeListener {
 	exitElse_stmt?: (ctx: Else_stmtContext) => void;
 
 	/**
+	 * Enter a parse tree produced by `ParPlusPlusParser.while_expr`.
+	 * @param ctx the parse tree
+	 */
+	enterWhile_expr?: (ctx: While_exprContext) => void;
+	/**
+	 * Exit a parse tree produced by `ParPlusPlusParser.while_expr`.
+	 * @param ctx the parse tree
+	 */
+	exitWhile_expr?: (ctx: While_exprContext) => void;
+
+	/**
 	 * Enter a parse tree produced by `ParPlusPlusParser.while_stmt`.
 	 * @param ctx the parse tree
 	 */
@@ -234,6 +250,39 @@ export interface ParPlusPlusListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	exitWhile_stmt?: (ctx: While_stmtContext) => void;
+
+	/**
+	 * Enter a parse tree produced by `ParPlusPlusParser.for_id`.
+	 * @param ctx the parse tree
+	 */
+	enterFor_id?: (ctx: For_idContext) => void;
+	/**
+	 * Exit a parse tree produced by `ParPlusPlusParser.for_id`.
+	 * @param ctx the parse tree
+	 */
+	exitFor_id?: (ctx: For_idContext) => void;
+
+	/**
+	 * Enter a parse tree produced by `ParPlusPlusParser.for_expr1`.
+	 * @param ctx the parse tree
+	 */
+	enterFor_expr1?: (ctx: For_expr1Context) => void;
+	/**
+	 * Exit a parse tree produced by `ParPlusPlusParser.for_expr1`.
+	 * @param ctx the parse tree
+	 */
+	exitFor_expr1?: (ctx: For_expr1Context) => void;
+
+	/**
+	 * Enter a parse tree produced by `ParPlusPlusParser.for_expr2`.
+	 * @param ctx the parse tree
+	 */
+	enterFor_expr2?: (ctx: For_expr2Context) => void;
+	/**
+	 * Exit a parse tree produced by `ParPlusPlusParser.for_expr2`.
+	 * @param ctx the parse tree
+	 */
+	exitFor_expr2?: (ctx: For_expr2Context) => void;
 
 	/**
 	 * Enter a parse tree produced by `ParPlusPlusParser.for_stmt`.
@@ -443,6 +492,17 @@ export interface ParPlusPlusListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	exitOutput_stmt?: (ctx: Output_stmtContext) => void;
+
+	/**
+	 * Enter a parse tree produced by `ParPlusPlusParser.output_arg`.
+	 * @param ctx the parse tree
+	 */
+	enterOutput_arg?: (ctx: Output_argContext) => void;
+	/**
+	 * Exit a parse tree produced by `ParPlusPlusParser.output_arg`.
+	 * @param ctx the parse tree
+	 */
+	exitOutput_arg?: (ctx: Output_argContext) => void;
 
 	/**
 	 * Enter a parse tree produced by `ParPlusPlusParser.output_args`.

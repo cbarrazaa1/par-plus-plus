@@ -28,7 +28,7 @@ void module inicia(int y)
 }
 
 main() {
-  read(p);
+  read(p, i, j);
   j = p * 2;
   inicia(p * j - 5);
 

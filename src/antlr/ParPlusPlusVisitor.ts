@@ -19,7 +19,11 @@ import { Return_stmtContext } from "./ParPlusPlusParser";
 import { If_exprContext } from "./ParPlusPlusParser";
 import { If_stmtContext } from "./ParPlusPlusParser";
 import { Else_stmtContext } from "./ParPlusPlusParser";
+import { While_exprContext } from "./ParPlusPlusParser";
 import { While_stmtContext } from "./ParPlusPlusParser";
+import { For_idContext } from "./ParPlusPlusParser";
+import { For_expr1Context } from "./ParPlusPlusParser";
+import { For_expr2Context } from "./ParPlusPlusParser";
 import { For_stmtContext } from "./ParPlusPlusParser";
 import { Rel_opContext } from "./ParPlusPlusParser";
 import { Eq_opContext } from "./ParPlusPlusParser";
@@ -39,6 +43,7 @@ import { Func_call_argsContext } from "./ParPlusPlusParser";
 import { Input_stmtContext } from "./ParPlusPlusParser";
 import { Input_argsContext } from "./ParPlusPlusParser";
 import { Output_stmtContext } from "./ParPlusPlusParser";
+import { Output_argContext } from "./ParPlusPlusParser";
 import { Output_argsContext } from "./ParPlusPlusParser";
 import { Main_functionContext } from "./ParPlusPlusParser";
 
@@ -164,11 +169,39 @@ export interface ParPlusPlusVisitor<Result> extends ParseTreeVisitor<Result> {
 	visitElse_stmt?: (ctx: Else_stmtContext) => Result;
 
 	/**
+	 * Visit a parse tree produced by `ParPlusPlusParser.while_expr`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitWhile_expr?: (ctx: While_exprContext) => Result;
+
+	/**
 	 * Visit a parse tree produced by `ParPlusPlusParser.while_stmt`.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	visitWhile_stmt?: (ctx: While_stmtContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by `ParPlusPlusParser.for_id`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitFor_id?: (ctx: For_idContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by `ParPlusPlusParser.for_expr1`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitFor_expr1?: (ctx: For_expr1Context) => Result;
+
+	/**
+	 * Visit a parse tree produced by `ParPlusPlusParser.for_expr2`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitFor_expr2?: (ctx: For_expr2Context) => Result;
 
 	/**
 	 * Visit a parse tree produced by `ParPlusPlusParser.for_stmt`.
@@ -302,6 +335,13 @@ export interface ParPlusPlusVisitor<Result> extends ParseTreeVisitor<Result> {
 	 * @return the visitor result
 	 */
 	visitOutput_stmt?: (ctx: Output_stmtContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by `ParPlusPlusParser.output_arg`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitOutput_arg?: (ctx: Output_argContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `ParPlusPlusParser.output_args`.

@@ -11,7 +11,9 @@ export type FuncTable = {[key: string]: FuncTableRow};
 export type FuncTableRow = {
   name: string;
   type: ValueType;
+  params: ValueType[];
   vars: VarsTable;
+  quadNumber: number;
 };
 
 export function printFuncTable(table: FuncTable): void {
