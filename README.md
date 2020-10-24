@@ -1,4 +1,12 @@
-# Progreso Actual - Entrega #2
+# Progreso Actual - Entrega #3
+En esta entrega se realiza la generación básica de cuádruplos lineales, como
+expresiones, asignaciones, prints y reads. Además, se implementan cuádruplos no
+lineales como el if, if-else, while y for.
+
+Incluye también las bases para comenzar la generación de código para funciones, 
+pero no hay mucho hecho en ese aspecto todavía.
+
+## Anterior - Entrega #2
 En esta entrega se realiza la semántica básica del compilador. Ya se crea
 la tabla de funciones, y cada una de estas funciones crean su respectiva
 tabla de variables. También ya se da error de declaración múltiple en caso
@@ -14,11 +22,11 @@ posteriores.
 - Semántica Básica de Variables: Directorio de Procedimientos y Tablas de Variables [100%]
 - Semántica Básica de Expresiones: Tabla de Consideraciones Semánticas [100%]
 ---
-- Generación de Código de Expresiones Aritméticas y Estatutos Secuenciales: Asignación, Lectura, etc. [0%]
-- Generación de Código de Estatutos Condicionales: Decisiones [0%]
+- Generación de Código de Expresiones Aritméticas y Estatutos Secuenciales: Asignación, Lectura, etc. [100%]
+- Generación de Código de Estatutos Condicionales: Decisiones [100%]
 ---
-- Generación de Código de Estatutos Condicionales: Ciclos [0%]
-- Generación de Código de Funciones [0%]
+- Generación de Código de Estatutos Condicionales: Ciclos [100%]
+- Generación de Código de Funciones [15%]
 ---
 - Mapa de Memoria de Ejecución para la Máquina Virtual [0%]
 - Máquina Virtual: Ejecución de Expresiones Aritméticas y Estatus Secuenciales [0%]
