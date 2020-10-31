@@ -1,4 +1,3 @@
-import {Stack} from 'typescript-collections';
 import {ParPlusPlusListener} from './antlr/ParPlusPlusListener';
 import {
   Addsub_opContext,
@@ -6,31 +5,27 @@ import {
   Else_stmtContext,
   Eq_opContext,
   Exp6Context,
-  Input_argsContext,
+  For_idContext,
   FunctionContext,
+  Func_callContext,
+  Func_call_argsContext,
   Func_paramsContext,
+  Input_argsContext,
   Muldiv_opContext,
-  Output_argsContext,
   Output_argContext,
   Rel_opContext,
   TypeContext,
   Var_id_declContext,
-  While_stmtContext,
-  While_exprContext,
-  For_idContext,
-  For_expr1Context,
-  For_expr2Context,
-  For_stmtContext,
-  ProgramContext,
-  Main_functionContext,
-  Func_callContext,
-  Func_call_argsContext,
-  Return_stmtContext,
 } from './antlr/ParPlusPlusParser';
 import {getTypeForAddress, MemoryContext, MemoryType} from './Memory';
 import {QuadrupleAction, QuadrupleContext} from './Quadruple';
 import {Op, SemanticCube} from './semantics/SemanticCube';
-import {ConstantTable, FuncTable, printFuncTable, VarsTableRow} from './semantics/SymbolTable';
+import {
+  ConstantTable,
+  FuncTable,
+  printFuncTable,
+  VarsTableRow,
+} from './semantics/SymbolTable';
 import {stringToValueType, ValueType} from './semantics/Types';
 
 export default class Listener implements ParPlusPlusListener {
@@ -110,23 +105,23 @@ export default class Listener implements ParPlusPlusListener {
     }
   }
 
-  enterProgram(ctx: ProgramContext): void {
+  // Listener Implementation
+  enterProgram(): void {
     this.quads.create(QuadrupleAction.GOTO, null, null, null);
     this.quads.jumps.push(0);
   }
 
-  enterMain_function(ctx: Main_functionContext): void {
+  enterMain_function(): void {
     this.memory.resetTemporals();
     const n = this.quads.jumps.pop();
     const size = this.quads.size();
     this.quads.fill(n, size);
   }
 
-  exitMain_function(ctx: Main_functionContext): void {
+  exitMain_function(): void {
     this.quads.create(QuadrupleAction.END, null, null, null);
   }
-  
-  // Listener Implementation
+
   exitProgram(): void {
     printFuncTable(this.funcTable);
     this.quads.print();
@@ -183,19 +178,24 @@ export default class Listener implements ParPlusPlusListener {
     // add return value to global
     if (type != ValueType.VOID) {
       this.funcTable['global'].vars[name + '()'] = {
-        name: name + "()",
+        name: name + '()',
         type,
         addr: this.memory.newVar(type, MemoryType.Global),
-      }
+      };
     }
   }
-  
-  exitFunction(ctx: FunctionContext): void {
+
+  exitFunction(): void {
     this.quads.create(QuadrupleAction.ENDFUNC, null, null, null);
   }
 
-  exitReturn_stmt(ctx: Return_stmtContext): void {
-    this.quads.create(QuadrupleAction.RET, null, null, this.quads.operands.pop());
+  exitReturn_stmt(): void {
+    this.quads.create(
+      QuadrupleAction.RET,
+      null,
+      null,
+      this.quads.operands.pop(),
+    );
   }
 
   exitFunc_params(ctx: Func_paramsContext): void {
@@ -308,7 +308,10 @@ export default class Listener implements ParPlusPlusListener {
     if (constName != null) {
       let addr = this.constantTable[constName];
       if (this.constantTable[constName] == null) {
-        this.constantTable[constName] = this.memory.newVar(constType, MemoryType.Constant);
+        this.constantTable[constName] = this.memory.newVar(
+          constType,
+          MemoryType.Constant,
+        );
         addr = this.constantTable[constName];
       }
       this.quads.operands.push(addr);
@@ -407,10 +410,7 @@ export default class Listener implements ParPlusPlusListener {
   }
 
   exitOutput_arg(ctx: Output_argContext): void {
-    const res =
-      ctx.STR_VAL() != null
-        ? this.memory.newString()
-        : this.quads.operands.pop();
+    let res = this.quads.operands.pop();
 
     if (ctx.STR_VAL() != null) {
       const constName = ctx.STR_VAL().text;
@@ -419,6 +419,8 @@ export default class Listener implements ParPlusPlusListener {
         this.constantTable[constName] = this.memory.newString();
         addr = this.constantTable[constName];
       }
+
+      res = addr;
     }
 
     this.quads.create(QuadrupleAction.WRITE, null, null, res);
@@ -490,19 +492,14 @@ export default class Listener implements ParPlusPlusListener {
     const controlVar = this.quads.operands.peek();
     const controlType = getTypeForAddress(controlVar);
     const resultType = SemanticCube[controlType][type][Op.ASSIGN];
-    
+
     // check if assign is possible
     if (resultType == null) {
       throw new Error('Type mismatch');
     }
 
     // assign initial exp to control var
-    this.quads.create(
-      QuadrupleAction.ASSIGN,
-      exp,
-      null,
-      controlVar,
-    );
+    this.quads.create(QuadrupleAction.ASSIGN, exp, null, controlVar);
   }
 
   exitFor_expr2(): void {
@@ -568,11 +565,11 @@ export default class Listener implements ParPlusPlusListener {
     if (this.funcTable[name] == null) {
       throw new Error(`Function ${name} not declared.`);
     }
-    
-    if (ctx.func_call_args().expr() != null){
+
+    if (ctx.func_call_args().expr() != null) {
       const func_call_len = ctx.func_call_args().expr().length;
-      if (this.funcTable[name].params.length != func_call_len){
-        throw new Error(`On function ${name} incorrect parameter count.`)
+      if (this.funcTable[name].params.length != func_call_len) {
+        throw new Error(`On function ${name} incorrect parameter count.`);
       }
     }
 
@@ -580,22 +577,23 @@ export default class Listener implements ParPlusPlusListener {
     this.quads.operators.push(Op.FunctionFalseBottom);
   }
 
-  exitFunc_call(ctx: Func_callContext): void {
+  exitFunc_call(): void {
     const func = this.funcTable[this.currentFuncCall];
     this.quads.create(QuadrupleAction.GOSUB, func.name, null, func.quadNumber);
-    
+
     // push temp with return type
     if (func.type != ValueType.VOID) {
       const tempAddr = this.memory.newVar(func.type, MemoryType.Temp);
-      this.quads.create(QuadrupleAction.ASSIGN, this.funcTable['global'].vars[this.currentFuncCall + '()'].addr, null, tempAddr);
+      this.quads.create(
+        QuadrupleAction.ASSIGN,
+        this.funcTable['global'].vars[this.currentFuncCall + '()'].addr,
+        null,
+        tempAddr,
+      );
       this.quads.operands.push(tempAddr);
     }
 
     this.quads.operators.pop();
-  }
-
-  enterFunc_call_args(ctx: Func_call_argsContext): void {
-    
   }
 
   exitFunc_call_args(ctx: Func_call_argsContext): void {
@@ -611,12 +609,15 @@ export default class Listener implements ParPlusPlusListener {
     // generate quads
     for (let i = 0; i < params.length; i++) {
       const func = this.funcTable[this.currentFuncCall];
-      if (params[i].type != func.params[i].type){
-        throw new Error(`On function ${func.name} incorrect parameter type.`)
+      if (params[i].type != func.params[i].type) {
+        throw new Error(`On function ${func.name} incorrect parameter type.`);
       }
-      this.quads.create(QuadrupleAction.PARAM, null, params[i].operand, func.params[i].addr);
+      this.quads.create(
+        QuadrupleAction.PARAM,
+        null,
+        params[i].operand,
+        func.params[i].addr,
+      );
     }
-
-    
   }
 }
