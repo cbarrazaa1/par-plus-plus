@@ -14,6 +14,8 @@ export enum Op {
   GTE, // >=
   LTE, // =<
   ASSIGN, // =
+  FalseBottom, // False bottom for expressions
+  FunctionFalseBottom, // False bottom for functions
 }
 
 const cube = new Array(3);

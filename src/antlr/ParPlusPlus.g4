@@ -120,7 +120,7 @@ exp6 : '(' expr ')'
   | CHAR_VAL
   ;
 
-func_call : ID '(' func_call_args ')' ( ';' )?
+func_call : ID '(' ( func_call_args )? ')' ( ';' )?
   ;
 
 func_call_args : expr ( ',' expr )*

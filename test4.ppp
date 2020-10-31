@@ -1,17 +1,18 @@
 program Ejemplo4;
 
 var
-  int x, y;
+  int x, y, z, w;
+  char a;
 
-int module intersects(int lX, int lY, int lW, int lH, int x)
-  var int y, res;
+int module intersects(int lX, int lY, int lW, int lH)
 {
-  res = (
-    x > lX & x < lX + lW |
-    y > lY & y < lY + lH
-  );
+  return (lX + lY);
 }
 
 main() {
-
+  x = 1;
+  y = 2;
+  z = 3;
+  w = 4;
+  write(x + y - intersects(x + x, y * z, z + 5, w - x + intersects(1, 1, 1, 1)));
 }

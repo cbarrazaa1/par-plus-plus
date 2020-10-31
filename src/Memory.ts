@@ -51,6 +51,18 @@ export function getTypeForAddress(addr: number): ValueType {
   }
 }
 
+export function getMemoryTypeForAddress(addr: number): MemoryType {
+  if (addr >= GLOBAL_INT && addr < LOCAL_INT) {
+    return MemoryType.Global;
+  } else if (addr >= LOCAL_INT && addr < TEMP_INT){
+    return MemoryType.Local;
+  } else if (addr >= TEMP_INT && addr < CONST_INT) {
+    return MemoryType.Temp;
+  } else if (addr >= CONST_INT && addr < CONST_STR + 1000) {
+    return MemoryType.Local;
+  }
+}
+
 // TODO: validar rangos al agregar
 export class MemoryContext {
   private globalInts: number = GLOBAL_INT;
@@ -128,5 +140,11 @@ export class MemoryContext {
     this.localInts = LOCAL_INT;
     this.localFloats = LOCAL_FLOAT;
     this.localChars = LOCAL_CHAR;
+  }
+
+  public resetTemporals(): void {
+    this.tempInts = TEMP_INT;
+    this.tempFloats = TEMP_FLOAT;
+    this.tempChars = TEMP_CHAR;
   }
 }

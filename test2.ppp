@@ -6,7 +6,7 @@ var
 int module fact()
   var int i;
 {
-  i = ((a*b-c*d)>c+d*e/f)&(g*h-j>l-a)&b+c>d*f;
+  i = a + b + (c - d + (e - f + (g - h )+ j ) + l) + k;
   return (i);
 }
 

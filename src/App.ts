@@ -7,7 +7,7 @@ import ParseTreeListener from './ParseTreeListener';
 import {ParPlusPlusListener} from './antlr/ParPlusPlusListener';
 
 function main(): void {
-  const inputText = readFileSync('test1.ppp', 'utf-8');
+  const inputText = readFileSync('test8.ppp', 'utf-8');
   const inputStream = CharStreams.fromString(inputText);
   const lexer = new ParPlusPlusLexer(inputStream);
   const tokenStream = new CommonTokenStream(lexer);

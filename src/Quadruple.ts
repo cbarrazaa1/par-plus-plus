@@ -20,26 +20,34 @@ export enum QuadrupleAction {
   GOTO = 'GOTO',
   WRITE = 'WRITE',
   READ = 'READ',
+  GOSUB = 'GOSUB',
+  ERA = 'ERA',
+  PARAM = 'PARAM',
+  RET = 'RET',
+  ENDFUNC = 'ENDFUNC',
+  END = 'END',
 }
+
+type QuadrupleValue = number | string | null;
 
 export type Quadruple = {
   action: QuadrupleAction;
-  left: number | null;
-  right: number | null;
-  result: number | null;
+  left: QuadrupleValue;
+  right: QuadrupleValue;
+  result: QuadrupleValue;
 };
 
 export class QuadrupleContext {
   private quads: Quadruple[] = [];
   public operands: Stack<number> = new Stack();
-  public operators: Stack<Op | null> = new Stack();
+  public operators: Stack<Op> = new Stack();
   public jumps: Stack<number> = new Stack();
 
   public create(
     action: QuadrupleAction,
-    left: number | null,
-    right: number | null,
-    result: number | null,
+    left: QuadrupleValue,
+    right: QuadrupleValue,
+    result: QuadrupleValue,
   ): void {
     this.quads.push({
       action,
