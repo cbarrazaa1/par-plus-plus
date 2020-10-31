@@ -1,4 +1,8 @@
-# Progreso Actual - Entrega #3
+# Progreso Actual - Entrega #4
+En esta entrega se realiza la generación de cuádruplos para funciones, así
+como el manejo del valor de retorno de funciones dentro de expresiones.
+
+# Anterior - Entrega #3
 En esta entrega se realiza la generación básica de cuádruplos lineales, como
 expresiones, asignaciones, prints y reads. Además, se implementan cuádruplos no
 lineales como el if, if-else, while y for.
@@ -26,7 +30,7 @@ posteriores.
 - Generación de Código de Estatutos Condicionales: Decisiones [100%]
 ---
 - Generación de Código de Estatutos Condicionales: Ciclos [100%]
-- Generación de Código de Funciones [15%]
+- Generación de Código de Funciones [100%]
 ---
 - Mapa de Memoria de Ejecución para la Máquina Virtual [0%]
 - Máquina Virtual: Ejecución de Expresiones Aritméticas y Estatus Secuenciales [0%]
