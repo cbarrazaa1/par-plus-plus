@@ -1,3 +1,4 @@
+import {ConstantTable, FuncTable, FuncTableRow} from './semantics/SymbolTable';
 import {ValueType} from './semantics/Types';
 
 const GLOBAL_INT = 1000,
@@ -9,11 +10,11 @@ const LOCAL_INT = 4000,
   LOCAL_CHAR = 6000;
 
 const TEMP_INT = 7000,
-  TEMP_FLOAT = 8000, 
+  TEMP_FLOAT = 8000,
   TEMP_CHAR = 9000;
 
-const CONST_INT = 10000, 
-  CONST_FLOAT = 11000, 
+const CONST_INT = 10000,
+  CONST_FLOAT = 11000,
   CONST_CHAR = 12000,
   CONST_STR = 13000;
 
@@ -54,12 +55,12 @@ export function getTypeForAddress(addr: number): ValueType {
 export function getMemoryTypeForAddress(addr: number): MemoryType {
   if (addr >= GLOBAL_INT && addr < LOCAL_INT) {
     return MemoryType.Global;
-  } else if (addr >= LOCAL_INT && addr < TEMP_INT){
+  } else if (addr >= LOCAL_INT && addr < TEMP_INT) {
     return MemoryType.Local;
   } else if (addr >= TEMP_INT && addr < CONST_INT) {
     return MemoryType.Temp;
   } else if (addr >= CONST_INT && addr < CONST_STR + 1000) {
-    return MemoryType.Local;
+    return MemoryType.Constant;
   }
 }
 
@@ -148,3 +149,211 @@ export class MemoryContext {
     this.tempChars = TEMP_CHAR;
   }
 }
+
+export class MemoryContainer {
+  private ints: number[];
+  private floats: number[];
+  private chars: string[];
+  private strings?: string[];
+
+  private intStart: number;
+  private floatStart: number;
+  private charStart: number;
+  private stringStart?: number;
+
+  constructor(
+    intCount: number,
+    floatCount: number,
+    charCount: number,
+    stringCount: number,
+    intStart: number,
+    floatStart: number,
+    charStart: number,
+    stringStart?: number,
+  ) {
+    this.ints = new Array(intCount).fill(0);
+    this.floats = new Array(floatCount).fill(0.0);
+    this.chars = new Array(charCount).fill(' ');
+    this.strings = new Array(stringCount).fill(' ');
+    this.intStart = intStart;
+    this.floatStart = floatStart;
+    this.charStart = charStart;
+    this.stringStart = stringStart;
+  }
+
+  public getValue(addr: number): number | string {
+    const type = getTypeForAddress(addr);
+
+    switch (type) {
+      case ValueType.INT:
+        return this.getInt(addr);
+      case ValueType.FLOAT:
+        return this.getFloat(addr);
+      case ValueType.CHAR:
+        return this.getChar(addr);
+      case ValueType.STRING:
+        return this.getString(addr);
+    }
+  }
+
+  public setValue(addr: number, value: number | string): void {
+    const type = getTypeForAddress(addr);
+    
+    switch (type) {
+      case ValueType.INT:
+        this.setInt(addr, value as number);
+        break;
+      case ValueType.FLOAT:
+        this.setFloat(addr, value as number);
+        break;
+      case ValueType.CHAR:
+        this.setChar(addr, value as string);
+        break;
+      case ValueType.STRING:
+        this.setString(addr, value as string);
+        break;
+    }
+  }
+
+  public getInt(addr: number): number {
+    return this.ints[addr - this.intStart];
+  }
+
+  public getFloat(addr: number): number {
+    return this.floats[addr - this.floatStart];
+  }
+
+  public getChar(addr: number): string {
+    return this.chars[addr - this.stringStart];
+  }
+
+  public getString(addr: number): string {
+    return this.strings[addr - this.stringStart];
+  }
+
+  public setInt(addr: number, value: number): void {
+    this.ints[addr - this.intStart] = value;
+  }
+
+  public setFloat(addr: number, value: number): void {
+    this.floats[addr - this.floatStart] = value;
+  }
+
+  public setChar(addr: number, value: string): void {
+    this.chars[addr - this.charStart] = value;
+  }
+
+  public setString(addr: number, value: string): void {
+    this.strings[addr - this.stringStart] = value;
+  }
+}
+
+export class DataSegment {
+  public globals: MemoryContainer;
+  public temps: MemoryContainer;
+  public constants: MemoryContainer;
+
+  constructor(globalTable: FuncTableRow, constantTable: ConstantTable) {
+    this.globals = new MemoryContainer(
+      globalTable.varCount.ints,
+      globalTable.varCount.floats,
+      globalTable.varCount.chars,
+      0,
+      GLOBAL_INT,
+      GLOBAL_FLOAT,
+      GLOBAL_CHAR,
+    );
+
+    this.temps = new MemoryContainer(
+      globalTable.tempCount.ints,
+      globalTable.tempCount.floats,
+      globalTable.tempCount.chars,
+      0,
+      TEMP_INT,
+      TEMP_FLOAT,
+      TEMP_CHAR,
+    );
+
+    // count variables with constant table
+    let constInts = 0,
+      constFloats = 0,
+      constChars = 0,
+      constStrings = 0;
+    Object.values(constantTable).forEach((addr: number): void => {
+      const type = getTypeForAddress(addr);
+
+      switch (type) {
+        case ValueType.INT:
+          constInts++;
+          break;
+        case ValueType.FLOAT:
+          constFloats++;
+          break;
+        case ValueType.CHAR:
+          constChars++;
+          break;
+        case ValueType.STRING:
+          constStrings++;
+          break;
+      }
+    });
+
+    this.constants = new MemoryContainer(
+      constInts,
+      constFloats,
+      constChars,
+      0,
+      CONST_INT,
+      CONST_FLOAT,
+      CONST_CHAR,
+      CONST_STR,
+    );
+
+    // fill constants
+    for (const key in constantTable) {
+      let value: number | string = key;
+      const type = getTypeForAddress(constantTable[key]);
+
+      if (type === ValueType.INT || type === ValueType.FLOAT) {
+        value = Number(value);
+      }
+
+      this.constants.setValue(constantTable[key], value);
+    }
+  }
+}
+
+/*
+  MemoryAlgo {
+    ints
+    floats
+    chars
+    strings?
+
+    getInt()
+  }
+
+  GlobalMemory extends MemoryAlgo
+  getInt(index) override {
+    return ints[index - this.intStart]
+  }
+
+  TempMemory extends MemoryAlgo
+  getInt(ind)
+
+  DataSegment {
+    globals: MemoryAlgo
+    temps: MemoryAlgo
+    constants: MemoryAlgo
+  }
+
+  ActivationRecord {
+    locals: MemoryAlgo
+    temps: MemoryAlgo
+  }
+
+  Stack<ActivationRecord>
+
+  ds.globals.getInt(1000)
+  ints = [5, 10, 2]
+*/

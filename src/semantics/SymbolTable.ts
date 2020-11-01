@@ -7,6 +7,12 @@ export type VarsTableRow = {
   addr: number;
 };
 
+type VarCounter = {
+  ints: number;
+  floats: number;
+  chars: number;
+}
+
 export type FuncTable = {[key: string]: FuncTableRow};
 export type FuncTableRow = {
   name: string;
@@ -14,7 +20,8 @@ export type FuncTableRow = {
   params: {type: ValueType, addr: number}[];
   vars: VarsTable;
   quadNumber: number;
-  tempCount: number;
+  varCount: VarCounter;
+  tempCount: VarCounter;
 };
 
 export type ConstantTable = {[key: string]: number};

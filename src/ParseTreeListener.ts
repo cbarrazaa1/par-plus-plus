@@ -29,13 +29,13 @@ import {
 import {stringToValueType, ValueType} from './semantics/Types';
 
 export default class Listener implements ParPlusPlusListener {
-  private funcTable: FuncTable;
-  private constantTable: ConstantTable;
+  public funcTable: FuncTable;
+  public constantTable: ConstantTable;
+  public quads: QuadrupleContext;
   private currentType: ValueType;
   private currentFunc: string;
   private currentFuncCall: string;
   private memory: MemoryContext;
-  private quads: QuadrupleContext;
 
   constructor() {
     this.funcTable = {
@@ -45,7 +45,16 @@ export default class Listener implements ParPlusPlusListener {
         params: [],
         vars: {},
         quadNumber: 0,
-        tempCount: 0,
+        varCount: {
+          ints: 0,
+          floats: 0,
+          chars: 0,
+        },
+        tempCount: {
+          ints: 0,
+          floats: 0,
+          chars: 0,
+        },
       },
     };
     this.constantTable = {};
@@ -101,7 +110,15 @@ export default class Listener implements ParPlusPlusListener {
       const result = this.memory.newVar(resultType, MemoryType.Temp);
       this.quads.create(opActionPairs[index].action, left, right, result);
       this.quads.operands.push(result);
-      this.funcTable[this.currentFunc].tempCount++;
+
+      const counter =
+        resultType === ValueType.INT
+          ? 'ints'
+          : resultType === ValueType.FLOAT
+          ? 'floats'
+          : 'chars';
+
+      this.funcTable[this.currentFunc].tempCount[counter]++;
     }
   }
 
@@ -112,6 +129,7 @@ export default class Listener implements ParPlusPlusListener {
   }
 
   enterMain_function(): void {
+    this.currentFunc = 'global';
     this.memory.resetTemporals();
     const n = this.quads.jumps.pop();
     const size = this.quads.size();
@@ -172,7 +190,16 @@ export default class Listener implements ParPlusPlusListener {
       vars: {},
       params: [],
       quadNumber: this.quads.size(),
-      tempCount: 0,
+      varCount: {
+        ints: 0,
+        floats: 0,
+        chars: 0,
+      },
+      tempCount: {
+        ints: 0,
+        floats: 0,
+        chars: 0,
+      },
     };
 
     // add return value to global
@@ -192,9 +219,9 @@ export default class Listener implements ParPlusPlusListener {
   exitReturn_stmt(): void {
     this.quads.create(
       QuadrupleAction.RET,
-      null,
-      null,
       this.quads.operands.pop(),
+      null,
+      this.funcTable['global'].vars[this.currentFunc + '()'].addr,
     );
   }
 
@@ -413,7 +440,8 @@ export default class Listener implements ParPlusPlusListener {
     let res = this.quads.operands.pop();
 
     if (ctx.STR_VAL() != null) {
-      const constName = ctx.STR_VAL().text;
+      let constName = ctx.STR_VAL().text;
+      constName = constName.substr(1, constName.length - 2);
       let addr = this.constantTable[constName];
       if (this.constantTable[constName] == null) {
         this.constantTable[constName] = this.memory.newString();
@@ -512,10 +540,11 @@ export default class Listener implements ParPlusPlusListener {
 
     // create temporal so we can store comparison result
     const temp = this.memory.newInt(MemoryType.Temp);
+    this.funcTable[this.currentFunc].tempCount.ints++;
 
     // create comparison quad
     this.quads.create(
-      QuadrupleAction.LT,
+      QuadrupleAction.LTE,
       this.quads.operands.peek(),
       exp,
       temp,
@@ -536,14 +565,17 @@ export default class Listener implements ParPlusPlusListener {
 
     // create temp variable to store addition result
     const temp = this.memory.newInt(MemoryType.Temp);
+    this.funcTable[this.currentFunc].tempCount.ints++;
+
+    // check if 1 is in constant table
+    let addr = this.constantTable['1'];
+    if (this.constantTable['1'] == null) {
+      this.constantTable['1'] = this.memory.newInt(MemoryType.Constant);
+      addr = this.constantTable['1'];
+    }
 
     // add one to control var
-    this.quads.create(
-      QuadrupleAction.ADD,
-      controlVar,
-      this.memory.newInt(MemoryType.Constant), // 1
-      temp,
-    );
+    this.quads.create(QuadrupleAction.ADD, controlVar, addr, temp);
 
     // update control var
     this.quads.create(QuadrupleAction.ASSIGN, temp, null, controlVar);
@@ -584,6 +616,14 @@ export default class Listener implements ParPlusPlusListener {
     // push temp with return type
     if (func.type != ValueType.VOID) {
       const tempAddr = this.memory.newVar(func.type, MemoryType.Temp);
+      this.funcTable[this.currentFunc].tempCount[
+        func.type === ValueType.INT
+          ? 'ints'
+          : func.type === ValueType.FLOAT
+          ? 'floats'
+          : 'chars'
+      ]++;
+
       this.quads.create(
         QuadrupleAction.ASSIGN,
         this.funcTable['global'].vars[this.currentFuncCall + '()'].addr,

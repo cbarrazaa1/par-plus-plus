@@ -69,4 +69,8 @@ export class QuadrupleContext {
     console.log(`****************\n** Quadruples **\n****************`);
     console.table(this.quads);
   }
+
+  public getQuads(): Quadruple[] {
+    return this.quads;
+  }
 }
