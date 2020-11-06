@@ -37,13 +37,7 @@ export class VirtualMachine {
       return this.ds.globals.getValue(addr);
     } else if (memoryType === MemoryType.Local) {
       return this.currentFunc.locals.getValue(addr);
-      // return this.stack.peek().locals.getValue(addr);
     } else if (memoryType === MemoryType.Temp) {
-      // if (this.stack.isEmpty()) {
-      //   return this.ds.temps.getValue(addr);
-      // }
-
-      // return this.stack.peek().temps.getValue(addr);
       if (this.currentFunc == null) {
         return this.ds.temps.getValue(addr);
       }
@@ -60,14 +54,8 @@ export class VirtualMachine {
     if (memoryType === MemoryType.Global) {
       this.ds.globals.setValue(addr, value);
     } else if (memoryType === MemoryType.Local) {
-      //  this.stack.peek().locals.setValue(addr, value);
       this.currentFunc.locals.setValue(addr, value);
     } else if (memoryType === MemoryType.Temp) {
-      // if (this.stack.isEmpty()) {
-      //   this.ds.temps.setValue(addr, value);
-      // } else {
-      //   this.stack.peek().temps.setValue(addr, value);
-      // }
       if (this.currentFunc == null) {
         this.ds.temps.setValue(addr, value);
       } else {

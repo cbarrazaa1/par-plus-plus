@@ -37,18 +37,13 @@ int module fib(int n) {
 int module fibIter(int n)
 var int prevPrev, prev, curr, i;
 {
-  curr = 1;
-
-  for i = 1 to n - 1 do {
-    prevPrev = prev;
-    prev = curr;
-    curr = prevPrev + prev;
-    write(curr);
-  }
-
-  return (curr);
+  return (fib(n));
 }
 
 main() {
+  write(test(10));
+  write(fact(6));
   write(fib(10));
+  write(fibIter(10));
+  rec(5);
 }
