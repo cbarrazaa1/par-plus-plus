@@ -1,8 +1,9 @@
-import {DataSegment, getMemoryTypeForAddress, getTypeForAddress, MemoryType} from './Memory';
+import {ActivationRecord, DataSegment, getMemoryTypeForAddress, getTypeForAddress, MemoryType} from './Memory';
 import {Quadruple, QuadrupleAction} from './Quadruple';
 import {ConstantTable, FuncTable} from './semantics/SymbolTable';
 import {ValueType} from './semantics/Types';
 import readline from 'readline-sync';
+import {Stack} from 'typescript-collections';
 
 function boolToInt(bool: boolean) {
   return bool ? 1 : 0;
@@ -13,6 +14,9 @@ export class VirtualMachine {
   private quads: Quadruple[];
   private constantTable: ConstantTable;
   private ds: DataSegment;
+  private stack: Stack<ActivationRecord>;
+  private jumps: Stack<number>;
+  private currentFunc: ActivationRecord | null;
   private ip: number;
 
   constructor(obj: any) {
@@ -21,6 +25,9 @@ export class VirtualMachine {
     this.constantTable = obj.constTable as ConstantTable;
     this.ip = 0;
     this.ds = new DataSegment(this.funcTable['global'], this.constantTable);
+    this.stack = new Stack();
+    this.jumps = new Stack();
+    this.currentFunc = null;
   }
 
   private getValue(addr: number): number | string {
@@ -29,10 +36,19 @@ export class VirtualMachine {
     if (memoryType === MemoryType.Global) {
       return this.ds.globals.getValue(addr);
     } else if (memoryType === MemoryType.Local) {
-      // ... TODO funciones
+      return this.currentFunc.locals.getValue(addr);
+      // return this.stack.peek().locals.getValue(addr);
     } else if (memoryType === MemoryType.Temp) {
-      // ... TODO: diferenciar si en funcion o no
-      return this.ds.temps.getValue(addr);
+      // if (this.stack.isEmpty()) {
+      //   return this.ds.temps.getValue(addr);
+      // }
+
+      // return this.stack.peek().temps.getValue(addr);
+      if (this.currentFunc == null) {
+        return this.ds.temps.getValue(addr);
+      }
+
+      return this.currentFunc.temps.getValue(addr);
     } else {
       return this.ds.constants.getValue(addr);
     }
@@ -44,11 +60,24 @@ export class VirtualMachine {
     if (memoryType === MemoryType.Global) {
       this.ds.globals.setValue(addr, value);
     } else if (memoryType === MemoryType.Local) {
-      // ... TODO funciones
+      //  this.stack.peek().locals.setValue(addr, value);
+      this.currentFunc.locals.setValue(addr, value);
     } else if (memoryType === MemoryType.Temp) {
-      // ... TODO: diferenciar si en funcion o no
-      this.ds.temps.setValue(addr, value);
+      // if (this.stack.isEmpty()) {
+      //   this.ds.temps.setValue(addr, value);
+      // } else {
+      //   this.stack.peek().temps.setValue(addr, value);
+      // }
+      if (this.currentFunc == null) {
+        this.ds.temps.setValue(addr, value);
+      } else {
+        this.currentFunc.temps.setValue(addr, value);
+      }
     }
+  }
+
+  private setParam(addr: number, value: number | string): void {
+    this.stack.peek().locals.setValue(addr, value);
   }
 
   public run(): void {
@@ -174,20 +203,33 @@ export class VirtualMachine {
           this.ip = quad.result as number;
           continue;
         case QuadrupleAction.GOSUB:
-          break;
+          this.currentFunc = this.stack.peek();
+          this.jumps.push(this.ip + 1);
+          this.ip = quad.result as number;
+          continue;
         case QuadrupleAction.ERA:
+          this.currentFunc = this.stack.peek();
+          this.stack.push(new ActivationRecord(this.funcTable[quad.result], quad.result as string));
           break;
         case QuadrupleAction.PARAM:
+          right = this.getValue(quad.right as number);
+          this.setParam(quad.result as number, right);
           break;
         case QuadrupleAction.RET:
-          break;
+          left = this.getValue(quad.left as number);
+          this.setValue(quad.result as number, left);
+          this.stack.pop();
+          this.currentFunc = this.stack.peek();
+          this.ip = this.jumps.pop();
+          continue;
         case QuadrupleAction.ENDFUNC:
-          break;
+          this.stack.pop();
+          this.currentFunc = this.stack.peek();
+          this.ip = this.jumps.pop();
+          continue;
       }
 
       this.ip++;
     }
-
-    console.log(this.ds.globals);
   }
 }

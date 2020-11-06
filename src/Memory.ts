@@ -323,6 +323,36 @@ export class DataSegment {
   }
 }
 
+export class ActivationRecord {
+  public locals: MemoryContainer;
+  public temps: MemoryContainer;
+  public name: string;
+
+  constructor(funcTable: FuncTableRow, name: string) {
+    this.locals = new MemoryContainer(
+      funcTable.varCount.ints,
+      funcTable.varCount.floats,
+      funcTable.varCount.chars,
+      0,
+      LOCAL_INT,
+      LOCAL_FLOAT,
+      LOCAL_CHAR,
+    );
+
+    this.temps = new MemoryContainer(
+      funcTable.tempCount.ints,
+      funcTable.tempCount.floats,
+      funcTable.tempCount.chars,
+      0,
+      TEMP_INT,
+      TEMP_FLOAT,
+      TEMP_CHAR,
+    );
+
+    this.name = name;
+  }
+}
+
 /*
   MemoryAlgo {
     ints
