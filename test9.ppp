@@ -41,7 +41,7 @@ var int prevPrev, prev, curr, i;
 }
 
 main() {
-  write(test(10, 10));
+  write(test(10));
   write(fact(6));
   write(fib(10));
   rec(5);

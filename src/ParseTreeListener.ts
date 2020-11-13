@@ -15,6 +15,7 @@ import {
   Output_argContext,
   Rel_opContext,
   Return_stmtContext,
+  StatementContext,
   TypeContext,
   Var_id_declContext,
 } from './antlr/ParPlusPlusParser';
@@ -405,6 +406,15 @@ export default class Listener implements ParPlusPlusListener {
     this.quads.operators.push(Op.OR);
   }
 
+  enterStatement(ctx: StatementContext): void {
+    if (ctx.func_call() != null) {
+      const func = this.funcTable[ctx.func_call().ID().text];
+      if (func.type !== ValueType.VOID) {
+        throw new Error('Using non-void function outside of expression.');
+      }
+    }
+  }
+
   exitIf_expr(): void {
     // make sure it's int for bool check
     if (getTypeForAddress(this.quads.operands.peek()) != ValueType.INT) {
@@ -463,6 +473,10 @@ export default class Listener implements ParPlusPlusListener {
       }
 
       res = addr;
+    }
+
+    if (res == null) {
+      throw new Error('Empty or void argument in write.');
     }
 
     this.quads.create(QuadrupleAction.WRITE, null, null, res);

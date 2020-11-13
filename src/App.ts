@@ -9,7 +9,7 @@ import { ValueType } from './semantics/Types';
 import { VirtualMachine } from './VirtualMachine';
 
 function main(): void {
-  const fileName = 'test10';
+  const fileName = 'test9';
 
   // compile
   const inputText = readFileSync(`${fileName}.ppp`, 'utf-8');

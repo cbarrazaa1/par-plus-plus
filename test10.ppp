@@ -1,8 +1,7 @@
 program Ejemplo10;
 
-int module test1() {
+void module test1() {
   write("inside test1");
-  return (1);
 }
 
 void module test2(int x) {
@@ -21,7 +20,6 @@ void module rec(int x) {
 }
 
 main() {
-  return;
   test1();
   test2(5);
   rec(10);
