@@ -211,7 +211,13 @@ export class VirtualMachine {
 
           this.stack.pop();
           this.currentFunc = this.stack.peek();
-          this.ip = this.jumps.pop();
+
+          // check if in main
+          if (this.jumps.size() === 0) {
+            this.ip = this.quads.length - 1;
+          } else {
+            this.ip = this.jumps.pop();
+          }
           continue;
         case QuadrupleAction.ENDFUNC:
           this.stack.pop();
