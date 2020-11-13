@@ -204,8 +204,11 @@ export class VirtualMachine {
           this.setParam(quad.result as number, right);
           break;
         case QuadrupleAction.RET:
-          left = this.getValue(quad.left as number);
-          this.setValue(quad.result as number, left);
+          if (quad.result != null) {
+            left = this.getValue(quad.left as number);
+            this.setValue(quad.result as number, left);
+          }
+
           this.stack.pop();
           this.currentFunc = this.stack.peek();
           this.ip = this.jumps.pop();

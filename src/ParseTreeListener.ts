@@ -14,6 +14,7 @@ import {
   Muldiv_opContext,
   Output_argContext,
   Rel_opContext,
+  Return_stmtContext,
   TypeContext,
   Var_id_declContext,
 } from './antlr/ParPlusPlusParser';
@@ -203,7 +204,7 @@ export default class Listener implements ParPlusPlusListener {
     };
 
     // add return value to global
-    if (type != ValueType.VOID) {
+    if (type !== ValueType.VOID) {
       this.funcTable['global'].vars[name + '()'] = {
         name: name + '()',
         type,
@@ -216,12 +217,25 @@ export default class Listener implements ParPlusPlusListener {
     this.quads.create(QuadrupleAction.ENDFUNC, null, null, null);
   }
 
-  exitReturn_stmt(): void {
+  exitReturn_stmt(ctx: Return_stmtContext): void {
+    const type = this.funcTable[this.currentFunc].type;
+    if (ctx.expr() == null) {
+      if (type !== ValueType.VOID) {
+        throw new Error('Empty return in non-void function');
+      }
+    } else {
+      if (type === ValueType.VOID) {
+        throw new Error('Return with expression in void function');
+      }
+    }
+
     this.quads.create(
       QuadrupleAction.RET,
       this.quads.operands.pop(),
       null,
-      this.funcTable['global'].vars[this.currentFunc + '()'].addr,
+      type === ValueType.VOID
+        ? null
+        : this.funcTable['global'].vars[this.currentFunc + '()'].addr,
     );
   }
 
@@ -599,7 +613,8 @@ export default class Listener implements ParPlusPlusListener {
       throw new Error(`Function ${name} not declared.`);
     }
 
-    if (ctx.func_call_args() == null) { // check empty param list
+    if (ctx.func_call_args() == null) {
+      // check empty param list
       if (func.params.length !== 0) {
         throw new Error(`On function ${name} incorrect parameter count.`);
       }
@@ -620,7 +635,7 @@ export default class Listener implements ParPlusPlusListener {
     // check if empty params
     if (ctx.func_call_args() == null) {
       if (func.params.length !== 0) {
-        throw new Error()
+        throw new Error();
       }
     }
 
