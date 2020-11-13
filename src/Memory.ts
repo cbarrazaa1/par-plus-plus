@@ -224,7 +224,7 @@ export class MemoryContainer {
   }
 
   public getChar(addr: number): string {
-    return this.chars[addr - this.stringStart];
+    return this.chars[addr - this.charStart];
   }
 
   public getString(addr: number): string {
@@ -279,6 +279,7 @@ export class DataSegment {
       constFloats = 0,
       constChars = 0,
       constStrings = 0;
+
     Object.values(constantTable).forEach((addr: number): void => {
       const type = getTypeForAddress(addr);
 
@@ -302,7 +303,7 @@ export class DataSegment {
       constInts,
       constFloats,
       constChars,
-      0,
+      constStrings,
       CONST_INT,
       CONST_FLOAT,
       CONST_CHAR,
@@ -352,38 +353,3 @@ export class ActivationRecord {
     this.name = name;
   }
 }
-
-/*
-  MemoryAlgo {
-    ints
-    floats
-    chars
-    strings?
-
-    getInt()
-  }
-
-  GlobalMemory extends MemoryAlgo
-  getInt(index) override {
-    return ints[index - this.intStart]
-  }
-
-  TempMemory extends MemoryAlgo
-  getInt(ind)
-
-  DataSegment {
-    globals: MemoryAlgo
-    temps: MemoryAlgo
-    constants: MemoryAlgo
-  }
-
-  ActivationRecord {
-    locals: MemoryAlgo
-    temps: MemoryAlgo
-  }
-
-  Stack<ActivationRecord>
-
-  ds.globals.getInt(1000)
-  ints = [5, 10, 2]
-*/
