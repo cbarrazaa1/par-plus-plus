@@ -15,7 +15,16 @@ var_id_decl : ID ( '[' INT_VAL ']' ( '[' INT_VAL ']')? )?
 var_ids_decl : ( ',' var_id_decl )*
   ;
 
-var_id : ID ( '[' expr ']' ( '[' expr ']' )? )?
+var_id : ID ( var_id_vector ( var_id_matrix )? )?
+  ;
+
+var_id_dims : '[' expr ']'
+  ;
+
+var_id_vector : var_id_dims
+  ;
+
+var_id_matrix : var_id_dims
   ;
 
 var_ids : ( ',' var_id )*
@@ -46,7 +55,7 @@ statement : assignment
 assignment : var_id '=' expr ';'
   ;
 
-return_stmt : 'return' '(' expr ')' ';'
+return_stmt : 'return' ('(' expr ')')? ';'
   ;
 
 if_expr : 'if' '(' expr ')' 'then'

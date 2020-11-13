@@ -1,0 +1,15 @@
+program Ejemplo10;
+
+void module test1() {
+  write("inside test1");
+}
+
+void module test2(int x) {
+  write("inside test2");
+  write(x);
+}
+
+main() {
+  test1();
+  test2();
+}

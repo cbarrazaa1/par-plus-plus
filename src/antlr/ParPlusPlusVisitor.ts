@@ -8,6 +8,9 @@ import { VarsContext } from "./ParPlusPlusParser";
 import { Var_id_declContext } from "./ParPlusPlusParser";
 import { Var_ids_declContext } from "./ParPlusPlusParser";
 import { Var_idContext } from "./ParPlusPlusParser";
+import { Var_id_dimsContext } from "./ParPlusPlusParser";
+import { Var_id_vectorContext } from "./ParPlusPlusParser";
+import { Var_id_matrixContext } from "./ParPlusPlusParser";
 import { Var_idsContext } from "./ParPlusPlusParser";
 import { TypeContext } from "./ParPlusPlusParser";
 import { FunctionContext } from "./ParPlusPlusParser";
@@ -90,6 +93,27 @@ export interface ParPlusPlusVisitor<Result> extends ParseTreeVisitor<Result> {
 	 * @return the visitor result
 	 */
 	visitVar_id?: (ctx: Var_idContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by `ParPlusPlusParser.var_id_dims`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitVar_id_dims?: (ctx: Var_id_dimsContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by `ParPlusPlusParser.var_id_vector`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitVar_id_vector?: (ctx: Var_id_vectorContext) => Result;
+
+	/**
+	 * Visit a parse tree produced by `ParPlusPlusParser.var_id_matrix`.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	visitVar_id_matrix?: (ctx: Var_id_matrixContext) => Result;
 
 	/**
 	 * Visit a parse tree produced by `ParPlusPlusParser.var_ids`.

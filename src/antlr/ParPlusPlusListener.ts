@@ -8,6 +8,9 @@ import { VarsContext } from "./ParPlusPlusParser";
 import { Var_id_declContext } from "./ParPlusPlusParser";
 import { Var_ids_declContext } from "./ParPlusPlusParser";
 import { Var_idContext } from "./ParPlusPlusParser";
+import { Var_id_dimsContext } from "./ParPlusPlusParser";
+import { Var_id_vectorContext } from "./ParPlusPlusParser";
+import { Var_id_matrixContext } from "./ParPlusPlusParser";
 import { Var_idsContext } from "./ParPlusPlusParser";
 import { TypeContext } from "./ParPlusPlusParser";
 import { FunctionContext } from "./ParPlusPlusParser";
@@ -107,6 +110,39 @@ export interface ParPlusPlusListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	exitVar_id?: (ctx: Var_idContext) => void;
+
+	/**
+	 * Enter a parse tree produced by `ParPlusPlusParser.var_id_dims`.
+	 * @param ctx the parse tree
+	 */
+	enterVar_id_dims?: (ctx: Var_id_dimsContext) => void;
+	/**
+	 * Exit a parse tree produced by `ParPlusPlusParser.var_id_dims`.
+	 * @param ctx the parse tree
+	 */
+	exitVar_id_dims?: (ctx: Var_id_dimsContext) => void;
+
+	/**
+	 * Enter a parse tree produced by `ParPlusPlusParser.var_id_vector`.
+	 * @param ctx the parse tree
+	 */
+	enterVar_id_vector?: (ctx: Var_id_vectorContext) => void;
+	/**
+	 * Exit a parse tree produced by `ParPlusPlusParser.var_id_vector`.
+	 * @param ctx the parse tree
+	 */
+	exitVar_id_vector?: (ctx: Var_id_vectorContext) => void;
+
+	/**
+	 * Enter a parse tree produced by `ParPlusPlusParser.var_id_matrix`.
+	 * @param ctx the parse tree
+	 */
+	enterVar_id_matrix?: (ctx: Var_id_matrixContext) => void;
+	/**
+	 * Exit a parse tree produced by `ParPlusPlusParser.var_id_matrix`.
+	 * @param ctx the parse tree
+	 */
+	exitVar_id_matrix?: (ctx: Var_id_matrixContext) => void;
 
 	/**
 	 * Enter a parse tree produced by `ParPlusPlusParser.var_ids`.

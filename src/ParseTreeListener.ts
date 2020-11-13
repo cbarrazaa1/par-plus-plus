@@ -592,15 +592,20 @@ export default class Listener implements ParPlusPlusListener {
 
   enterFunc_call(ctx: Func_callContext): void {
     const name = ctx.ID().text;
+    const func = this.funcTable[name];
     this.currentFuncCall = name;
 
     if (this.funcTable[name] == null) {
       throw new Error(`Function ${name} not declared.`);
     }
 
-    if (ctx.func_call_args().expr() != null) {
+    if (ctx.func_call_args() == null) { // check empty param list
+      if (func.params.length !== 0) {
+        throw new Error(`On function ${name} incorrect parameter count.`);
+      }
+    } else if (ctx.func_call_args().expr() != null) {
       const func_call_len = ctx.func_call_args().expr().length;
-      if (this.funcTable[name].params.length != func_call_len) {
+      if (func.params.length != func_call_len) {
         throw new Error(`On function ${name} incorrect parameter count.`);
       }
     }
@@ -609,8 +614,16 @@ export default class Listener implements ParPlusPlusListener {
     this.quads.operators.push(Op.FunctionFalseBottom);
   }
 
-  exitFunc_call(): void {
+  exitFunc_call(ctx: Func_callContext): void {
     const func = this.funcTable[this.currentFuncCall];
+
+    // check if empty params
+    if (ctx.func_call_args() == null) {
+      if (func.params.length !== 0) {
+        throw new Error()
+      }
+    }
+
     this.quads.create(QuadrupleAction.GOSUB, func.name, null, func.quadNumber);
 
     // push temp with return type
