@@ -23,6 +23,7 @@ export enum QuadrupleAction {
   GOSUB = 'GOSUB',
   ERA = 'ERA',
   PARAM = 'PARAM',
+  VERIFY = 'VER',
   RET = 'RET',
   ENDFUNC = 'ENDFUNC',
   END = 'END',
@@ -42,6 +43,7 @@ export class QuadrupleContext {
   public operands: Stack<number> = new Stack();
   public operators: Stack<Op> = new Stack();
   public jumps: Stack<number> = new Stack();
+  public arrayIds: Stack<string> = new Stack();
 
   public create(
     action: QuadrupleAction,

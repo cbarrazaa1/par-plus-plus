@@ -16,6 +16,7 @@ export enum Op {
   ASSIGN, // =
   FalseBottom, // False bottom for expressions
   FunctionFalseBottom, // False bottom for functions
+  ArrayFalseBottom, // False bottom for vectors and matrices
 }
 
 const cube = new Array(3);

@@ -17,7 +17,10 @@ import {
   Return_stmtContext,
   StatementContext,
   TypeContext,
+  Var_idContext,
   Var_id_declContext,
+  Var_id_matrixContext,
+  Var_id_vectorContext,
 } from './antlr/ParPlusPlusParser';
 import {getTypeForAddress, MemoryContext, MemoryType} from './Memory';
 import {QuadrupleAction, QuadrupleContext} from './Quadruple';
@@ -51,11 +54,13 @@ export default class Listener implements ParPlusPlusListener {
           ints: 0,
           floats: 0,
           chars: 0,
+          pointers: 0,
         },
         tempCount: {
           ints: 0,
           floats: 0,
           chars: 0,
+          pointers: 0,
         },
       },
     };
@@ -102,7 +107,16 @@ export default class Listener implements ParPlusPlusListener {
       const op = this.quads.operators.pop();
       const rightType = getTypeForAddress(right);
       const leftType = getTypeForAddress(left);
-      const resultType = SemanticCube[leftType][rightType][op];
+      let resultType;
+
+      console.log(leftType, rightType);
+      if (leftType === ValueType.POINTER) {
+        resultType = rightType;
+      } else if (rightType === ValueType.POINTER) {
+        resultType = leftType;
+      } else {
+        resultType = SemanticCube[leftType][rightType][op];
+      }
 
       // check if types are compatible
       if (resultType == null) {
@@ -118,7 +132,9 @@ export default class Listener implements ParPlusPlusListener {
           ? 'ints'
           : resultType === ValueType.FLOAT
           ? 'floats'
-          : 'chars';
+          : resultType === ValueType.CHAR
+          ? 'chars'
+          : 'pointer';
 
       this.funcTable[this.currentFunc].tempCount[counter]++;
     }
@@ -154,21 +170,70 @@ export default class Listener implements ParPlusPlusListener {
 
   exitVar_id_decl(ctx: Var_id_declContext): void {
     const id = ctx.ID().text;
+    const memType =
+      this.currentFunc === 'global' ? MemoryType.Global : MemoryType.Local;
+    let vectorSize = null,
+      matrixSize = null;
 
     // check if exists
     if (this.funcTable[this.currentFunc].vars[id] != null) {
       throw new Error(`Variable ${id} already declared.`);
     }
 
-    const memType =
-      this.currentFunc === 'global' ? MemoryType.Global : MemoryType.Local;
-
     // add to var table
     this.funcTable[this.currentFunc].vars[id] = {
       name: id,
       type: this.currentType,
       addr: this.memory.newVar(this.currentType, memType),
+      vectorSize: null,
+      matrixSize: null,
     };
+    const variable = this.funcTable[this.currentFunc].vars[id];
+
+    // check array dimensions
+    if (ctx.INT_VAL().length > 0) {
+      // check if one dimension
+      vectorSize = ctx.INT_VAL()[0].text;
+
+      // create constant for base address
+      if (this.constantTable[variable.addr] == null) {
+        this.constantTable[variable.addr] = this.memory.newInt(
+          MemoryType.Constant,
+        );
+      }
+
+      // check if vectorSize is in constant table
+      if (this.constantTable[vectorSize] == null) {
+        this.constantTable[vectorSize] = this.memory.newInt(
+          MemoryType.Constant,
+        );
+      }
+
+      if (ctx.INT_VAL().length > 1) {
+        // check if two dimensions
+        matrixSize = ctx.INT_VAL()[1].text;
+
+        // check if matrixSize is in constant table
+        if (this.constantTable[matrixSize] == null) {
+          this.constantTable[matrixSize] = this.memory.newInt(
+            MemoryType.Constant,
+          );
+        }
+
+        // reserve memory
+        this.memory.addArray(
+          Number(vectorSize) * Number(matrixSize),
+          this.currentType,
+          memType,
+        );
+      } else {
+        this.memory.addArray(Number(vectorSize), this.currentType, memType);
+      }
+    }
+
+    // set dimensions info
+    variable.vectorSize = vectorSize == null ? null : Number(vectorSize);
+    variable.matrixSize = matrixSize == null ? null : Number(matrixSize);
   }
 
   enterFunction(ctx: FunctionContext): void {
@@ -196,11 +261,13 @@ export default class Listener implements ParPlusPlusListener {
         ints: 0,
         floats: 0,
         chars: 0,
+        pointers: 0,
       },
       tempCount: {
         ints: 0,
         floats: 0,
         chars: 0,
+        pointers: 0,
       },
     };
 
@@ -210,6 +277,8 @@ export default class Listener implements ParPlusPlusListener {
         name: name + '()',
         type,
         addr: this.memory.newVar(type, MemoryType.Global),
+        vectorSize: null,
+        matrixSize: null,
       };
     }
   }
@@ -260,6 +329,8 @@ export default class Listener implements ParPlusPlusListener {
         name,
         type,
         addr,
+        vectorSize: null,
+        matrixSize: null,
       };
 
       this.funcTable[this.currentFunc].params.push({type, addr});
@@ -268,7 +339,11 @@ export default class Listener implements ParPlusPlusListener {
 
   exitAssignment(ctx: AssignmentContext): void {
     const variable = this.getVariable(ctx.var_id().ID().text);
-    const type = getTypeForAddress(this.quads.operands.peek());
+    let type = getTypeForAddress(this.quads.operands.peek());
+
+    if (type === ValueType.POINTER) {
+      type = variable.type;
+    }
 
     // check if types match
     if (SemanticCube[variable.type][type][Op.ASSIGN] == null) {
@@ -335,7 +410,10 @@ export default class Listener implements ParPlusPlusListener {
     // check for type of operand to add to stack
     if (ctx.var_id() != null) {
       const variable = this.getVariable(ctx.var_id().ID().text);
-      this.quads.operands.push(variable.addr);
+
+      if (variable.vectorSize == null) {
+        this.quads.operands.push(variable.addr);
+      }
     } else if (ctx.INT_VAL() != null) {
       constName = ctx.INT_VAL().text;
       constType = ValueType.INT;
@@ -462,6 +540,7 @@ export default class Listener implements ParPlusPlusListener {
 
   exitOutput_arg(ctx: Output_argContext): void {
     let res = this.quads.operands.pop();
+    console.log(this.quads.operands);
 
     if (ctx.STR_VAL() != null) {
       let constName = ctx.STR_VAL().text;
@@ -701,5 +780,93 @@ export default class Listener implements ParPlusPlusListener {
         func.params[i].addr,
       );
     }
+  }
+
+  enterVar_id(ctx: Var_idContext): void {
+    if (ctx.var_id_vector() == null) {
+      return;
+    }
+
+    this.quads.arrayIds.push(ctx.ID().text);
+  }
+
+  exitVar_id(ctx: Var_idContext): void {
+    if (ctx.var_id_vector() == null) {
+      return;
+    }
+
+    this.quads.arrayIds.pop();
+  }
+
+  enterVar_id_vector(ctx: Var_id_vectorContext): void {
+    this.quads.operators.push(Op.ArrayFalseBottom);
+  }
+
+  exitVar_id_vector(ctx: Var_id_vectorContext): void {
+    const variable = this.getVariable(this.quads.arrayIds.peek());
+    const exp = this.quads.operands.pop();
+
+    this.quads.create(
+      QuadrupleAction.VERIFY,
+      exp,
+      null,
+      this.constantTable[variable.vectorSize],
+    );
+
+    let temp;
+    if (variable.matrixSize != null) {
+      temp = this.memory.newInt(MemoryType.Temp);
+      this.funcTable[this.currentFunc].tempCount.ints++;
+      this.quads.create(
+        QuadrupleAction.MUL,
+        exp,
+        this.constantTable[variable.matrixSize],
+        temp,
+      );
+    } else {
+      temp = this.memory.newPointer();
+      this.funcTable[this.currentFunc].tempCount.pointers++;
+      this.quads.create(
+        QuadrupleAction.ADD,
+        exp,
+        this.constantTable[variable.addr],
+        temp,
+      );
+    }
+    this.quads.operands.push(temp);
+    this.quads.operators.pop();
+  }
+
+  enterVar_id_matrix(ctx: Var_id_matrixContext): void {
+    this.quads.operators.push(Op.ArrayFalseBottom);
+  }
+
+  exitVar_id_matrix(ctx: Var_id_matrixContext): void {
+    const variable = this.getVariable(this.quads.arrayIds.peek());
+    const exp = this.quads.operands.pop();
+    this.quads.create(
+      QuadrupleAction.VERIFY,
+      exp,
+      null,
+      this.constantTable[variable.matrixSize],
+    );
+
+    const tempPtr = this.memory.newPointer();
+    const tempInt = this.memory.newInt(MemoryType.Temp);
+    this.funcTable[this.currentFunc].tempCount.ints++;
+    this.funcTable[this.currentFunc].tempCount.pointers++;
+    const exp2 = this.quads.operands.pop();
+    
+    this.quads.create(QuadrupleAction.ADD, exp, exp2, tempInt);
+    this.quads.create(
+      QuadrupleAction.ADD,
+      tempInt,
+      this.constantTable[variable.addr],
+      tempPtr,
+    );
+    this.quads.operands.push(tempPtr);
+
+    // pop falsebottom
+    this.quads.operators.pop();
   }
 }

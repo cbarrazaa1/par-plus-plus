@@ -4,6 +4,7 @@ export enum ValueType {
   CHAR,
   VOID,
   STRING,
+  POINTER,
 }
 
 export function stringToValueType(str: string): ValueType {
@@ -16,6 +17,8 @@ export function stringToValueType(str: string): ValueType {
       return ValueType.CHAR;
     case 'void':
       return ValueType.VOID;
+    case 'pointer':
+      return ValueType.POINTER;
   }
 
   throw new Error('Invalid type');

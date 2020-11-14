@@ -1,4 +1,10 @@
-import {ActivationRecord, DataSegment, getMemoryTypeForAddress, getTypeForAddress, MemoryType} from './Memory';
+import {
+  ActivationRecord,
+  DataSegment,
+  getMemoryTypeForAddress,
+  getTypeForAddress,
+  MemoryType,
+} from './Memory';
 import {Quadruple, QuadrupleAction} from './Quadruple';
 import {ConstantTable, FuncTable} from './semantics/SymbolTable';
 import {ValueType} from './semantics/Types';
@@ -8,6 +14,21 @@ import {Stack} from 'typescript-collections';
 function boolToInt(bool: boolean) {
   return bool ? 1 : 0;
 }
+
+const binaryOperations = {
+  [QuadrupleAction.ADD]: (a, b) => a + b,
+  [QuadrupleAction.SUB]: (a, b) => a - b,
+  [QuadrupleAction.MUL]: (a, b) => a * b,
+  [QuadrupleAction.DIV]: (a, b) => a / b,
+  [QuadrupleAction.AND]: (a, b) => boolToInt(a && b),
+  [QuadrupleAction.OR]: (a, b) => boolToInt(a || b),
+  [QuadrupleAction.EQ]: (a, b) => boolToInt(a == b),
+  [QuadrupleAction.NEQ]: (a, b) => boolToInt(a != b),
+  [QuadrupleAction.GT]: (a, b) => boolToInt(a > b),
+  [QuadrupleAction.LT]: (a, b) => boolToInt(a < b),
+  [QuadrupleAction.GTE]: (a, b) => boolToInt(a >= b),
+  [QuadrupleAction.LTE]: (a, b) => boolToInt(a <= b),
+};
 
 export class VirtualMachine {
   private funcTable: FuncTable;
@@ -66,6 +87,35 @@ export class VirtualMachine {
 
   private setParam(addr: number, value: number | string): void {
     this.stack.peek().locals.setValue(addr, value);
+  }
+
+  private binaryOperationFunc(quad: Quadruple) {
+    let left = this.getValue(quad.left as number);
+    let right = this.getValue(quad.right as number);
+    let res = this.getValue(quad.result as number);
+
+    if (getTypeForAddress(quad.left as number) === ValueType.POINTER) {
+      left = this.getValue(left as number);
+    }
+
+    if (getTypeForAddress(quad.right as number) === ValueType.POINTER) {
+      right = this.getValue(right as number);
+    }
+
+    // if (getTypeForAddress(quad.result as number) === ValueType.POINTER) {
+    //   //res = this.getValue(res as number);
+    //   this.setValue(res as number, binaryOperations[quad.action](left, right));
+    // } else {
+    //   this.setValue(
+    //     quad.result as number,
+    //     binaryOperations[quad.action](left, right),
+    //   );
+    // }
+
+    this.setValue(
+      quad.result as number,
+      binaryOperations[quad.action](left, right),
+    );
   }
 
   public run(): void {
@@ -154,7 +204,7 @@ export class VirtualMachine {
           console.log(`> ${this.getValue(quad.result as number)}`);
           break;
         case QuadrupleAction.READ:
-          const input = readline.question("");
+          const input = readline.question('');
           const float = parseFloat(input);
           const int = parseInt(input);
           const isFloat = !isNaN(float);
@@ -171,7 +221,7 @@ export class VirtualMachine {
             const res = isFloat ? float : isInt ? int : input;
             this.setValue(quad.result as number, res);
           }
-          
+
           break;
         case QuadrupleAction.GOTOF:
           left = this.getValue(quad.left as number);
@@ -197,7 +247,12 @@ export class VirtualMachine {
           continue;
         case QuadrupleAction.ERA:
           this.currentFunc = this.stack.peek();
-          this.stack.push(new ActivationRecord(this.funcTable[quad.result], quad.result as string));
+          this.stack.push(
+            new ActivationRecord(
+              this.funcTable[quad.result],
+              quad.result as string,
+            ),
+          );
           break;
         case QuadrupleAction.PARAM:
           right = this.getValue(quad.right as number);
@@ -228,5 +283,8 @@ export class VirtualMachine {
 
       this.ip++;
     }
+
+    console.log(this.ds.globals);
+    console.log(this.ds.temps);
   }
 }

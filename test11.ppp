@@ -1,0 +1,12 @@
+program Ejemplo11;
+var
+  int vec[5];
+  int a;
+  int mat[4][5];
+  int b;
+  int c;
+  int res;
+
+main() {
+  res = mat[a + b][c - a] * b;
+}

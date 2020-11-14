@@ -5,12 +5,15 @@ export type VarsTableRow = {
   name: string;
   type: ValueType;
   addr: number;
+  vectorSize: number | null;
+  matrixSize: number | null;
 };
 
 type VarCounter = {
   ints: number;
   floats: number;
   chars: number;
+  pointers: number;
 }
 
 export type FuncTable = {[key: string]: FuncTableRow};
@@ -22,7 +25,7 @@ export type FuncTableRow = {
   quadNumber: number;
   varCount: VarCounter;
   tempCount: VarCounter;
-};
+};   
 
 export type ConstantTable = {[key: string]: number};
 
