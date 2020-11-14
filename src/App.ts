@@ -5,8 +5,8 @@ import {ParPlusPlusParser} from './antlr/ParPlusPlusParser';
 import {readFileSync, writeFileSync} from 'fs';
 import ParseTreeListener from './ParseTreeListener';
 import {ParPlusPlusListener} from './antlr/ParPlusPlusListener';
-import { ValueType } from './semantics/Types';
-import { VirtualMachine } from './VirtualMachine';
+import {ValueType} from './semantics/Types';
+import {VirtualMachine} from './VirtualMachine';
 
 function main(): void {
   const fileName = 'test11';
@@ -27,21 +27,49 @@ function main(): void {
 
   for (const key in funcTable) {
     // count variable types
-    for (const variable in funcTable[key].vars) {
-      const type = funcTable[key].vars[variable].type;
+    for (const variableName in funcTable[key].vars) {
+      const variable = funcTable[key].vars[variableName];
+      const type = variable.type;
       if (type === ValueType.INT) {
         funcTable[key].varCount.ints++;
+
+        if (variable.vectorSize != null) {
+          if (variable.matrixSize != null) {
+            funcTable[key].varCount.ints +=
+              variable.vectorSize * variable.matrixSize - 1;
+          } else {
+            funcTable[key].varCount.ints += variable.vectorSize - 1;
+          }
+        }
       } else if (type === ValueType.FLOAT) {
         funcTable[key].varCount.floats++;
+
+        if (variable.vectorSize != null) {
+          if (variable.matrixSize != null) {
+            funcTable[key].varCount.floats +=
+              variable.vectorSize * variable.matrixSize - 1;
+          } else {
+            funcTable[key].varCount.floats += variable.vectorSize - 1;
+          }
+        }
       } else {
         funcTable[key].varCount.chars++;
+
+        if (variable.vectorSize != null) {
+          if (variable.matrixSize != null) {
+            funcTable[key].varCount.chars +=
+              variable.vectorSize * variable.matrixSize - 1;
+          } else {
+            funcTable[key].varCount.chars += variable.vectorSize - 1;
+          }
+        }
       }
     }
 
     delete funcTable[key].vars;
     delete funcTable[key].params;
   }
-  
+
   const quads = parseTreeListener.quads.getQuads();
   const constTable = parseTreeListener.constantTable;
 

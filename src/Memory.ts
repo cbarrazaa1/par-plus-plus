@@ -352,6 +352,8 @@ export class DataSegment {
       TEMP_INT,
       TEMP_FLOAT,
       TEMP_CHAR,
+      0,
+      TEMP_PTR,
     );
 
     // count variables with constant table
@@ -384,6 +386,7 @@ export class DataSegment {
       constFloats,
       constChars,
       constStrings,
+      0,
       CONST_INT,
       CONST_FLOAT,
       CONST_CHAR,
@@ -430,6 +433,8 @@ export class ActivationRecord {
       TEMP_INT,
       TEMP_FLOAT,
       TEMP_CHAR,
+      0,
+      TEMP_PTR,
     );
 
     this.name = name;

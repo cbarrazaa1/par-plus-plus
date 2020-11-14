@@ -116,7 +116,7 @@ export default class Listener implements ParPlusPlusListener {
         resultType = leftType;
       } else {
         resultType = SemanticCube[leftType][rightType][op];
-      }
+      } 
 
       // check if types are compatible
       if (resultType == null) {
@@ -125,6 +125,7 @@ export default class Listener implements ParPlusPlusListener {
 
       const result = this.memory.newVar(resultType, MemoryType.Temp);
       this.quads.create(opActionPairs[index].action, left, right, result);
+      console.log(result);
       this.quads.operands.push(result);
 
       const counter =
@@ -354,7 +355,7 @@ export default class Listener implements ParPlusPlusListener {
       QuadrupleAction.ASSIGN,
       this.quads.operands.pop(),
       null,
-      variable.addr,
+      variable.vectorSize != null ? this.quads.operands.pop() : variable.addr,
     );
   }
 
@@ -412,6 +413,7 @@ export default class Listener implements ParPlusPlusListener {
       const variable = this.getVariable(ctx.var_id().ID().text);
 
       if (variable.vectorSize == null) {
+        console.log(variable.addr);
         this.quads.operands.push(variable.addr);
       }
     } else if (ctx.INT_VAL() != null) {

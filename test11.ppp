@@ -1,12 +1,23 @@
 program Ejemplo11;
 var
   int vec[5];
-  int a;
-  int mat[4][5];
-  int b;
-  int c;
-  int res;
+  int arr[3];
+  int x;
+  int y;
 
 main() {
-  res = mat[a + b][c - a] * b;
+  x = 1;
+  y = 3;
+  arr[0] = 0;
+  arr[1] = 1;
+  arr[2] = 2;
+
+  for x = 0 to 4 do {
+    vec[x] = y;
+    y = y + 1;
+  }
+
+  for x = 0 to 2 do {
+    write(vec[arr[x]]);
+  }
 }

@@ -125,83 +125,39 @@ export class VirtualMachine {
 
       switch (quad.action) {
         case QuadrupleAction.ADD:
-          left = this.getValue(quad.left as number);
-          right = this.getValue(quad.right as number);
-          result = this.getValue(quad.result as number);
-          this.setValue(quad.result as number, left + right);
-          break;
         case QuadrupleAction.SUB:
-          left = this.getValue(quad.left as number);
-          right = this.getValue(quad.right as number);
-          result = this.getValue(quad.result as number);
-          this.setValue(quad.result as number, left - right);
-          break;
         case QuadrupleAction.MUL:
-          left = this.getValue(quad.left as number);
-          right = this.getValue(quad.right as number);
-          result = this.getValue(quad.result as number);
-          this.setValue(quad.result as number, left * right);
-          break;
         case QuadrupleAction.DIV:
-          left = this.getValue(quad.left as number);
-          right = this.getValue(quad.right as number);
-          result = this.getValue(quad.result as number);
-          this.setValue(quad.result as number, left / right);
-          break;
         case QuadrupleAction.AND:
-          left = this.getValue(quad.left as number);
-          right = this.getValue(quad.right as number);
-          result = this.getValue(quad.result as number);
-          this.setValue(quad.result as number, boolToInt(left && right));
-          break;
         case QuadrupleAction.OR:
-          left = this.getValue(quad.left as number);
-          right = this.getValue(quad.right as number);
-          result = this.getValue(quad.result as number);
-          this.setValue(quad.result as number, boolToInt(left || right));
-          break;
         case QuadrupleAction.EQ:
-          left = this.getValue(quad.left as number);
-          right = this.getValue(quad.right as number);
-          result = this.getValue(quad.result as number);
-          this.setValue(quad.result as number, boolToInt(left === right));
-          break;
         case QuadrupleAction.NEQ:
-          left = this.getValue(quad.left as number);
-          right = this.getValue(quad.right as number);
-          result = this.getValue(quad.result as number);
-          this.setValue(quad.result as number, boolToInt(left !== right));
-          break;
         case QuadrupleAction.GT:
-          left = this.getValue(quad.left as number);
-          right = this.getValue(quad.right as number);
-          result = this.getValue(quad.result as number);
-          this.setValue(quad.result as number, boolToInt(left > right));
-          break;
         case QuadrupleAction.LT:
-          left = this.getValue(quad.left as number);
-          right = this.getValue(quad.right as number);
-          result = this.getValue(quad.result as number);
-          this.setValue(quad.result as number, boolToInt(left < right));
-          break;
         case QuadrupleAction.GTE:
-          left = this.getValue(quad.left as number);
-          right = this.getValue(quad.right as number);
-          result = this.getValue(quad.result as number);
-          this.setValue(quad.result as number, boolToInt(left >= right));
-          break;
         case QuadrupleAction.LTE:
-          left = this.getValue(quad.left as number);
-          right = this.getValue(quad.right as number);
-          result = this.getValue(quad.result as number);
-          this.setValue(quad.result as number, boolToInt(left <= right));
+          this.binaryOperationFunc(quad);
           break;
         case QuadrupleAction.ASSIGN:
           left = this.getValue(quad.left as number);
-          this.setValue(quad.result as number, left);
+
+          if (getTypeForAddress(quad.left as number) === ValueType.POINTER) {
+            left = this.getValue(left);
+          }
+
+          let resAssign = quad.result as number;
+          if (getTypeForAddress(resAssign) === ValueType.POINTER) {
+            resAssign = this.getValue(resAssign) as number;
+          }
+
+          this.setValue(resAssign, left);
           break;
         case QuadrupleAction.WRITE:
-          console.log(`> ${this.getValue(quad.result as number)}`);
+          let resWrite = quad.result as number;
+          if (getTypeForAddress(resWrite) === ValueType.POINTER) {
+            resWrite = this.getValue(resWrite) as number;
+          }
+          console.log(`> ${this.getValue(resWrite)}`);
           break;
         case QuadrupleAction.READ:
           const input = readline.question('');
