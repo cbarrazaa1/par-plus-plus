@@ -1,5 +1,6 @@
 import {Stack} from 'typescript-collections';
 import {Op} from './semantics/SemanticCube';
+import {ValueType} from './semantics/Types';
 
 export enum QuadrupleAction {
   ADD = '+',
@@ -37,6 +38,35 @@ export type Quadruple = {
   right: QuadrupleValue;
   result: QuadrupleValue;
 };
+
+export function quadActionToOp(action: QuadrupleAction): Op {
+  switch (action) {
+    case QuadrupleAction.ADD:
+      return Op.ADD;
+    case QuadrupleAction.SUB:
+      return Op.SUB;
+    case QuadrupleAction.MUL:
+      return Op.MUL;
+    case QuadrupleAction.DIV:
+      return Op.DIV;
+    case QuadrupleAction.AND:
+      return Op.AND;
+    case QuadrupleAction.OR:
+      return Op.OR;
+    case QuadrupleAction.EQ:
+      return Op.EQ;
+    case QuadrupleAction.NEQ:
+      return Op.NEQ;
+    case QuadrupleAction.GT:
+      return Op.GT;
+    case QuadrupleAction.LT:
+      return Op.LT;
+    case QuadrupleAction.GTE:
+      return Op.GTE;
+    case QuadrupleAction.LTE:
+      return Op.LTE;
+  }
+}
 
 export class QuadrupleContext {
   private quads: Quadruple[] = [];

@@ -95,6 +95,8 @@ export class MemoryContext {
         return this.newFloat(memType);
       case ValueType.CHAR:
         return this.newChar(memType);
+      case ValueType.POINTER:
+        return this.newPointer(); // temporal variable
     }
   }
 
@@ -323,6 +325,32 @@ export class MemoryContainer {
 
   public setPointer(addr: number, value: number): void {
     this.pointers[addr - this.pointerStart] = value;
+  }
+
+  public pushValue(value: number | string, type: ValueType): number {
+    switch (type) {
+      case ValueType.INT:
+        return this.pushInt(value as number);
+      case ValueType.FLOAT:
+        return this.pushFloat(value as number);
+      case ValueType.CHAR:
+        return this.pushChar(value as string);
+    }
+  }
+
+  public pushInt(value: number): number {
+    this.ints.push(value);
+    return this.ints.length - 1 + this.intStart;
+  }
+
+  public pushFloat(value: number): number {
+    this.floats.push(value);
+    return this.floats.length - 1 + this.floatStart;
+  }
+
+  public pushChar(value: string): number {
+    this.chars.push(value);
+    return this.chars.length - 1 + this.charStart;
   }
 }
 

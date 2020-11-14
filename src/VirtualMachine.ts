@@ -5,11 +5,12 @@ import {
   getTypeForAddress,
   MemoryType,
 } from './Memory';
-import {Quadruple, QuadrupleAction} from './Quadruple';
+import {quadActionToOp, Quadruple, QuadrupleAction} from './Quadruple';
 import {ConstantTable, FuncTable} from './semantics/SymbolTable';
 import {ValueType} from './semantics/Types';
 import readline from 'readline-sync';
 import {Stack} from 'typescript-collections';
+import {SemanticCube} from './semantics/SemanticCube';
 
 function boolToInt(bool: boolean) {
   return bool ? 1 : 0;
@@ -89,33 +90,58 @@ export class VirtualMachine {
     this.stack.peek().locals.setValue(addr, value);
   }
 
+  private pushValue(value: number | string, type: ValueType): number {
+    if (this.currentFunc == null) {
+      return this.ds.temps.pushValue(value, type);
+    }
+
+    return this.currentFunc.temps.pushValue(value, type);
+  }
+
   private binaryOperationFunc(quad: Quadruple) {
+    const leftType = getTypeForAddress(quad.left as number);
+    const rightType = getTypeForAddress(quad.right as number);
     let left = this.getValue(quad.left as number);
     let right = this.getValue(quad.right as number);
-    let res = this.getValue(quad.result as number);
+    let res = quad.result as number;
 
-    if (getTypeForAddress(quad.left as number) === ValueType.POINTER) {
+    if (leftType === ValueType.POINTER) {
       left = this.getValue(left as number);
     }
 
-    if (getTypeForAddress(quad.right as number) === ValueType.POINTER) {
+    if (rightType === ValueType.POINTER) {
       right = this.getValue(right as number);
     }
 
-    // if (getTypeForAddress(quad.result as number) === ValueType.POINTER) {
-    //   //res = this.getValue(res as number);
-    //   this.setValue(res as number, binaryOperations[quad.action](left, right));
-    // } else {
-    //   this.setValue(
-    //     quad.result as number,
-    //     binaryOperations[quad.action](left, right),
-    //   );
-    // }
+    if (leftType === ValueType.POINTER && rightType === ValueType.POINTER) {
+      res = this.getValue(res as number) as number;
+    }
 
-    this.setValue(
-      quad.result as number,
-      binaryOperations[quad.action](left, right),
-    );
+    if (res == null) {
+      let leftPtrType = leftType,
+        rightPtrType = rightType;
+      if (leftType === ValueType.POINTER) {
+        leftPtrType = getTypeForAddress(
+          this.getValue(quad.left as number) as number,
+        );
+      }
+
+      if (rightType === ValueType.POINTER) {
+        rightPtrType = getTypeForAddress(
+          this.getValue(quad.right as number) as number,
+        );
+      }
+
+      const resultType =
+        SemanticCube[leftPtrType][rightPtrType][quadActionToOp(quad.action)];
+      const tempAddr = this.pushValue(
+        binaryOperations[quad.action](left, right),
+        resultType,
+      );
+      this.setValue(quad.result as number, tempAddr);
+    } else {
+      this.setValue(res, binaryOperations[quad.action](left, right));
+    }
   }
 
   public run(): void {
