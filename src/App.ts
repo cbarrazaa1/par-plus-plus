@@ -7,6 +7,7 @@ import ParseTreeListener from './ParseTreeListener';
 import {ParPlusPlusListener} from './antlr/ParPlusPlusListener';
 import {ValueType} from './semantics/Types';
 import {VirtualMachine} from './VirtualMachine';
+import ErrorHandler from './ErrorHandler';
 
 function main(): void {
   const fileName = 'tests/MatrixMul';
@@ -17,6 +18,8 @@ function main(): void {
   const lexer = new ParPlusPlusLexer(inputStream);
   const tokenStream = new CommonTokenStream(lexer);
   const parser = new ParPlusPlusParser(tokenStream);
+  parser.removeErrorListeners();
+  parser.addErrorListener(new ErrorHandler());
   const tree = parser.program();
   const listener: ParPlusPlusListener = new ParseTreeListener();
   ParseTreeWalker.DEFAULT.walk(listener, tree);
