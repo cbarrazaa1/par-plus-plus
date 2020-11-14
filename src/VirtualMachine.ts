@@ -57,6 +57,7 @@ export class VirtualMachine {
     if (memoryType === MemoryType.Global) {
       return this.ds.globals.getValue(addr);
     } else if (memoryType === MemoryType.Local) {
+      console.log(this.ip);
       return this.currentFunc.locals.getValue(addr);
     } else if (memoryType === MemoryType.Temp) {
       if (this.currentFunc == null) {
@@ -90,30 +91,26 @@ export class VirtualMachine {
   }
 
   private binaryOperationFunc(quad: Quadruple) {
+    const leftType = getTypeForAddress(quad.left as number);
+    const rightType = getTypeForAddress(quad.right as number);
     let left = this.getValue(quad.left as number);
     let right = this.getValue(quad.right as number);
-    let res = this.getValue(quad.result as number);
+    let res = quad.result as number;
 
-    if (getTypeForAddress(quad.left as number) === ValueType.POINTER) {
+    if (leftType === ValueType.POINTER) {
       left = this.getValue(left as number);
     }
 
-    if (getTypeForAddress(quad.right as number) === ValueType.POINTER) {
+    if (rightType === ValueType.POINTER) {
       right = this.getValue(right as number);
     }
 
-    // if (getTypeForAddress(quad.result as number) === ValueType.POINTER) {
-    //   //res = this.getValue(res as number);
-    //   this.setValue(res as number, binaryOperations[quad.action](left, right));
-    // } else {
-    //   this.setValue(
-    //     quad.result as number,
-    //     binaryOperations[quad.action](left, right),
-    //   );
-    // }
+    if (leftType === ValueType.POINTER && rightType === ValueType.POINTER) {
+      res = this.getValue(res as number) as number;
+    }
 
     this.setValue(
-      quad.result as number,
+      res,
       binaryOperations[quad.action](left, right),
     );
   }
@@ -139,14 +136,20 @@ export class VirtualMachine {
           this.binaryOperationFunc(quad);
           break;
         case QuadrupleAction.ASSIGN:
+          const leftType = getTypeForAddress(quad.left as number);
+          const resultType = getTypeForAddress(quad.result as number);
           left = this.getValue(quad.left as number);
 
-          if (getTypeForAddress(quad.left as number) === ValueType.POINTER) {
+          if (leftType === ValueType.POINTER) {
             left = this.getValue(left);
           }
 
           let resAssign = quad.result as number;
           if (getTypeForAddress(resAssign) === ValueType.POINTER) {
+            resAssign = this.getValue(resAssign) as number;
+          }
+
+          if (leftType === ValueType.POINTER && resultType === ValueType.POINTER) {
             resAssign = this.getValue(resAssign) as number;
           }
 

@@ -95,6 +95,8 @@ export class MemoryContext {
         return this.newFloat(memType);
       case ValueType.CHAR:
         return this.newChar(memType);
+      case ValueType.POINTER:
+        return this.newPointer(); // temp
     }
   }
 

@@ -109,7 +109,7 @@ export default class Listener implements ParPlusPlusListener {
       const leftType = getTypeForAddress(left);
       let resultType;
 
-      console.log(leftType, rightType);
+      console.log('expHelper', leftType, rightType);
       if (leftType === ValueType.POINTER) {
         resultType = rightType;
       } else if (rightType === ValueType.POINTER) {
