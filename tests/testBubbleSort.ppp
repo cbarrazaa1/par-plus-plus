@@ -1,0 +1,41 @@
+program TestBubbleSort;
+var
+   int arr[5];
+
+
+
+void module bubbleSort(int n)
+    var 
+        int i, j, temp;
+{
+    for i = 0 to (n - 1) do {
+        for j = 0 to (n - i - 2) do {
+            if (arr[j] > arr[j + 1]) then {
+                temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+            }
+        }
+    }
+}
+
+void module printArray(int n)
+    var
+        int i;
+{
+    for i = 0 to (n - 1) do {
+        write(arr[i]);
+    }
+}
+
+
+main() {
+    arr[0] = 3;
+    arr[1] = 1;
+    arr[2] = 2;
+    arr[3] = 100;
+    arr[4] = 5;
+    bubbleSort(5);
+    printArray(5);
+
+}

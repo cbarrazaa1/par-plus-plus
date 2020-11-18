@@ -1,0 +1,22 @@
+program TestArray2;
+var
+   int i, j, k;
+   int arr[10];
+   int arr2[10];
+   int arr3[10];
+
+int module hola(int x) {
+    return x;
+}
+
+main() {
+    i = 1;
+    j = 0;
+    k = 3;
+    arr[0] = i;
+    arr2[3] = j;
+    arr3[2] = k;
+    arr3[1] = 10;
+
+    write(arr[arr2[arr3[2]]] + arr3[k-2], "fin");
+}

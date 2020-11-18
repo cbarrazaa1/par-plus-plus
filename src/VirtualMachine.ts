@@ -117,7 +117,10 @@ export class VirtualMachine {
       res = this.getValue(res as number) as number;
     }
 
-    if (res == null) {
+    if (
+      res == null ||
+      (leftType === ValueType.POINTER && rightType === ValueType.POINTER)
+    ) {
       let leftPtrType = leftType,
         rightPtrType = rightType;
       if (leftType === ValueType.POINTER) {
@@ -139,6 +142,7 @@ export class VirtualMachine {
         resultType,
       );
       this.setValue(quad.result as number, tempAddr);
+      console.log('tempAddr', this.getValue(tempAddr));
     } else {
       this.setValue(res, binaryOperations[quad.action](left, right));
     }
@@ -207,6 +211,11 @@ export class VirtualMachine {
           break;
         case QuadrupleAction.GOTOF:
           left = this.getValue(quad.left as number);
+
+          if (getTypeForAddress(quad.left as number) === ValueType.POINTER) {
+            left = this.getValue(left);
+          }
+
           if (!left) {
             this.ip = quad.result as number;
             continue;
@@ -214,6 +223,11 @@ export class VirtualMachine {
           break;
         case QuadrupleAction.GOTOT:
           left = this.getValue(quad.left as number);
+
+          if (getTypeForAddress(quad.left as number) === ValueType.POINTER) {
+            left = this.getValue(left);
+          }
+
           if (left) {
             this.ip = quad.result as number;
             continue;
@@ -238,11 +252,20 @@ export class VirtualMachine {
           break;
         case QuadrupleAction.PARAM:
           right = this.getValue(quad.right as number);
+
+          if (getTypeForAddress(quad.right as number) === ValueType.POINTER) {
+            right = this.getValue(right);
+          }
+
           this.setParam(quad.result as number, right);
           break;
         case QuadrupleAction.RET:
           if (quad.result != null) {
             left = this.getValue(quad.left as number);
+            if (getTypeForAddress(quad.left as number) === ValueType.POINTER) {
+              left = this.getValue(left);
+            }
+
             this.setValue(quad.result as number, left);
           }
 

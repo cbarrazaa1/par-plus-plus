@@ -497,7 +497,8 @@ export default class Listener implements ParPlusPlusListener {
 
   exitIf_expr(): void {
     // make sure it's int for bool check
-    if (getTypeForAddress(this.quads.operands.peek()) != ValueType.INT) {
+    const type = getTypeForAddress(this.quads.operands.peek());
+    if (type !== ValueType.INT && type !== ValueType.POINTER) {
       throw new Error('Type mismatch in if-statement');
     }
 
@@ -772,7 +773,7 @@ export default class Listener implements ParPlusPlusListener {
     // generate quads
     for (let i = 0; i < params.length; i++) {
       const func = this.funcTable[this.currentFuncCall];
-      if (params[i].type != func.params[i].type) {
+      if (params[i].type !== ValueType.POINTER && params[i].type != func.params[i].type) {
         throw new Error(`On function ${func.name} incorrect parameter type.`);
       }
       this.quads.create(

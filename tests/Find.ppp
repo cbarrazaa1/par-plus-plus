@@ -1,0 +1,32 @@
+program Find;
+var
+  int arr[5], found;
+
+int module find(int num, int n) 
+  var int res, i;
+{
+  for i = 0 to n - 1 do {
+    if (res != 1) then {
+      if (arr[i] == num) then {
+        res = 1;
+      }
+    }
+  }
+
+  return (res);
+}
+
+main() {
+  arr[0] = 1;
+  arr[1] = 2;
+  arr[2] = 3;
+  arr[3] = 4;
+  arr[4] = 5;
+
+  found = find(0, 5);
+  if (found) then {
+    write("Found number");
+  } else {
+    write("Did not find number");
+  }
+}

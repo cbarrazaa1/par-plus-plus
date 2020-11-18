@@ -1,23 +1,18 @@
 program Ejemplo11;
-var
-  int vec[5];
-  int arr[3];
-  int x;
-  int y;
+var 
+  int arr[5];
+
+int module test(int x)
+  var int arr[3], i;
+{
+  arr[0] = 1;
+  arr[1] = 2;
+  arr[2] = 5;
+
+  return (arr[arr[x]] + x);
+}
 
 main() {
-  x = 1;
-  y = 3;
-  arr[0] = 0;
-  arr[1] = 1;
-  arr[2] = 2;
-
-  for x = 0 to 4 do {
-    vec[x] = y;
-    y = y + 1;
-  }
-
-  for x = 0 to 2 do {
-    write(vec[arr[x]]);
-  }
+  arr[2] = 1;
+  write(test(arr[2]));
 }
