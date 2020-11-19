@@ -1,0 +1,7 @@
+program Ejemplo12;
+var
+  int B[10][10], i, j, k;
+
+main() {
+  i = B[i + j][k * j] + j;
+}

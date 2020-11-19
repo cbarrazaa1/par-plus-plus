@@ -4,19 +4,48 @@ var
    int arr[10];
    int arr2[10];
    int arr3[10];
+   float fArr[3];
+   char cArr[3];
 
-int module hola(int x) {
-    return x;
+int module hola(int x, int y, int z) {
+    return (x + y);
+}
+
+int module hola2(int x) {
+    return (x + 1);
 }
 
 main() {
-    i = 1;
+    i = 2;
     j = 0;
     k = 3;
     arr[0] = i;
+    arr[1] = 10;
+    arr[2] = 20;
     arr2[3] = j;
     arr3[2] = k;
     arr3[1] = 10;
 
+    fArr[0] = 1.5;
+    fArr[1] = 2.5;
+    fArr[2] = 3.25;
+
+    cArr[0] = 'a';
+    cArr[1] = 'b';
+    cArr[2] = 'c';
+
     write(arr[arr2[arr3[2]]] + arr3[k-2], "fin");
+    write(arr[0] * arr[1] + cArr[0]);
+
+    for arr[0] = arr[1] to arr[2] do {
+        write(arr[0]);
+    }
+
+    arr[0] = 0;
+    while (arr[0] < arr[1]) do {
+        write(arr[0]);
+        arr[0] = arr[0] + 1;
+    }
+
+    write(hola(arr[0], hola2(1), arr[0]));
 }

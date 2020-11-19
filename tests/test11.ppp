@@ -1,6 +1,7 @@
 program Ejemplo11;
 var 
   int arr[5];
+  int x;
 
 int module test(int x)
   var int arr[3], i;
@@ -14,5 +15,6 @@ int module test(int x)
 
 main() {
   arr[2] = 1;
-  write(test(arr[2]));
+  write(arr[5]);
+  write(1.0 / 3.0);
 }

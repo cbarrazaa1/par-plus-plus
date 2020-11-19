@@ -10,7 +10,7 @@ import {VirtualMachine} from './VirtualMachine';
 import ErrorHandler from './ErrorHandler';
 
 function main(): void {
-  const fileName = 'tests/test11';
+  const fileName = 'tests/test12';
 
   // compile
   const inputText = readFileSync(`${fileName}.ppp`, 'utf-8');
@@ -70,7 +70,6 @@ function main(): void {
     }
 
     delete funcTable[key].vars;
-    delete funcTable[key].params;
   }
 
   const quads = parseTreeListener.quads.getQuads();

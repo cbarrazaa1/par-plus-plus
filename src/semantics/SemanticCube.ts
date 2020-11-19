@@ -1,3 +1,4 @@
+import { O_APPEND } from 'constants';
 import {ValueType} from './Types';
 
 export enum Op {
@@ -53,6 +54,9 @@ cube[ValueType.INT][ValueType.FLOAT][Op.GTE] = ValueType.INT;
 cube[ValueType.INT][ValueType.FLOAT][Op.LTE] = ValueType.INT;
 cube[ValueType.INT][ValueType.FLOAT][Op.ASSIGN] = ValueType.INT;
 
+cube[ValueType.INT][ValueType.CHAR][Op.ADD] = ValueType.CHAR;
+cube[ValueType.INT][ValueType.CHAR][Op.SUB] = ValueType.CHAR;
+
 cube[ValueType.FLOAT][ValueType.INT][Op.ADD] = ValueType.FLOAT;
 cube[ValueType.FLOAT][ValueType.INT][Op.SUB] = ValueType.FLOAT;
 cube[ValueType.FLOAT][ValueType.INT][Op.MUL] = ValueType.FLOAT;
@@ -84,5 +88,8 @@ cube[ValueType.CHAR][ValueType.CHAR][Op.LT] = ValueType.INT;
 cube[ValueType.CHAR][ValueType.CHAR][Op.GTE] = ValueType.INT;
 cube[ValueType.CHAR][ValueType.CHAR][Op.LTE] = ValueType.INT;
 cube[ValueType.CHAR][ValueType.CHAR][Op.ASSIGN] = ValueType.CHAR;
+
+cube[ValueType.CHAR][ValueType.INT][Op.ADD] = ValueType.CHAR;
+cube[ValueType.CHAR][ValueType.INT][Op.SUB] = ValueType.CHAR;
 
 export const SemanticCube = cube;

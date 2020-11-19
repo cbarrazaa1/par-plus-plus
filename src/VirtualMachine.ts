@@ -20,7 +20,13 @@ const binaryOperations = {
   [QuadrupleAction.ADD]: (a, b) => a + b,
   [QuadrupleAction.SUB]: (a, b) => a - b,
   [QuadrupleAction.MUL]: (a, b) => a * b,
-  [QuadrupleAction.DIV]: (a, b) => a / b,
+  [QuadrupleAction.DIV]: (a, b) => {
+    if (b === 0) {
+      throw new Error('Runtime error: Division by zero');
+    }
+
+    return (a / b);
+  },
   [QuadrupleAction.AND]: (a, b) => boolToInt(a && b),
   [QuadrupleAction.OR]: (a, b) => boolToInt(a || b),
   [QuadrupleAction.EQ]: (a, b) => boolToInt(a == b),
@@ -40,6 +46,7 @@ export class VirtualMachine {
   private jumps: Stack<number>;
   private currentFunc: ActivationRecord | null;
   private ip: number;
+  private paramCountStack: Stack<number>;
 
   constructor(obj: any) {
     this.funcTable = obj.funcTable as FuncTable;
@@ -50,6 +57,7 @@ export class VirtualMachine {
     this.stack = new Stack();
     this.jumps = new Stack();
     this.currentFunc = null;
+    this.paramCountStack = new Stack();
   }
 
   private getValue(addr: number): number | string {
@@ -60,6 +68,7 @@ export class VirtualMachine {
     } else if (memoryType === MemoryType.Local) {
       return this.currentFunc.locals.getValue(addr);
     } else if (memoryType === MemoryType.Temp) {
+      console.log(this.currentFunc, addr);
       if (this.currentFunc == null) {
         return this.ds.temps.getValue(addr);
       }
@@ -90,7 +99,11 @@ export class VirtualMachine {
     this.stack.peek().locals.setValue(addr, value);
   }
 
-  private pushValue(value: number | string, type: ValueType): number {
+  private getParam(addr: number): number | string {
+    return this.stack.peek().temps.getValue(addr);
+  }
+
+  private pushValue(value: number, type: ValueType): number {
     if (this.currentFunc == null) {
       return this.ds.temps.pushValue(value, type);
     }
@@ -137,14 +150,31 @@ export class VirtualMachine {
 
       const resultType =
         SemanticCube[leftPtrType][rightPtrType][quadActionToOp(quad.action)];
+
+      if (resultType == null) {
+        throw new Error('Runtime error: Incompatible pointer types.');
+      }
+
+      let binOp = binaryOperations[quad.action](left, right);
+      if (quad.action === QuadrupleAction.DIV) {
+        if (resultType === ValueType.INT) {
+          binOp = Math.floor(binOp);
+        }
+      }
+
       const tempAddr = this.pushValue(
         binaryOperations[quad.action](left, right),
         resultType,
       );
       this.setValue(quad.result as number, tempAddr);
-      console.log('tempAddr', this.getValue(tempAddr));
     } else {
-      this.setValue(res, binaryOperations[quad.action](left, right));
+      let binOp = binaryOperations[quad.action](left, right);
+      if (quad.action === QuadrupleAction.DIV) {
+        if (getTypeForAddress(res) === ValueType.INT) {
+          binOp = Math.floor(binOp);
+        }
+      }
+      this.setValue(res, binOp);
     }
   }
 
@@ -187,7 +217,14 @@ export class VirtualMachine {
           if (getTypeForAddress(resWrite) === ValueType.POINTER) {
             resWrite = this.getValue(resWrite) as number;
           }
-          console.log(`> ${this.getValue(resWrite)}`);
+
+          console.log(
+            `> ${
+              getTypeForAddress(resWrite) === ValueType.CHAR
+                ? String.fromCharCode(this.getValue(resWrite) as number)
+                : this.getValue(resWrite)
+            }`,
+          );
           break;
         case QuadrupleAction.READ:
           const input = readline.question('');
@@ -213,7 +250,12 @@ export class VirtualMachine {
           left = this.getValue(quad.left as number);
 
           if (getTypeForAddress(quad.left as number) === ValueType.POINTER) {
+            if (getTypeForAddress(left) !== ValueType.INT) {
+              
+            }
+
             left = this.getValue(left);
+
           }
 
           if (!left) {
@@ -240,8 +282,10 @@ export class VirtualMachine {
           this.currentFunc = this.stack.peek();
           this.jumps.push(this.ip + 1);
           this.ip = quad.result as number;
+          this.paramCountStack.pop();
           continue;
         case QuadrupleAction.ERA:
+          this.paramCountStack.push(0);
           this.currentFunc = this.stack.peek();
           this.stack.push(
             new ActivationRecord(
@@ -251,13 +295,23 @@ export class VirtualMachine {
           );
           break;
         case QuadrupleAction.PARAM:
+          console.log(this.stack);
           right = this.getValue(quad.right as number);
+          const func = this.funcTable[this.stack.peek().name];
+          console.log(func.params, this.paramCountStack.peek(), quad.right, right);
 
           if (getTypeForAddress(quad.right as number) === ValueType.POINTER) {
+            const rightType = getTypeForAddress(right);
             right = this.getValue(right);
+            if (rightType !== func.params[this.paramCountStack.peek()].type){
+              throw new Error('Incorrect Parameters');
+            }
           }
 
           this.setParam(quad.result as number, right);
+          let paramCount = this.paramCountStack.pop();
+          paramCount++;
+          this.paramCountStack.push(paramCount);
           break;
         case QuadrupleAction.RET:
           if (quad.result != null) {
@@ -284,6 +338,23 @@ export class VirtualMachine {
           this.currentFunc = this.stack.peek();
           this.ip = this.jumps.pop();
           continue;
+        case QuadrupleAction.VERIFY:
+          left = this.getValue(quad.left as number);
+          const leftType = getTypeForAddress(quad.left as number);
+          result = this.getValue(quad.result as number);
+
+          let leftPtrType;
+          if (leftType == ValueType.POINTER){
+            leftPtrType = getTypeForAddress(this.getValue(quad.left as number) as number);
+            left = this.getValue(left);
+          }
+
+          if (leftType != ValueType.INT && leftPtrType != ValueType.INT){
+            throw new Error("Verify error: Incorrect type");
+          }
+          if (left > result-1 || left < 0){
+            throw new Error("Verify error: Incorrect size");
+          }
       }
 
       this.ip++;
@@ -291,5 +362,6 @@ export class VirtualMachine {
 
     console.log(this.ds.globals);
     console.log(this.ds.temps);
+    console.log(this.ds.constants);
   }
 }

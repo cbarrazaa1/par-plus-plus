@@ -103,6 +103,9 @@ or_op : '|'
 and_op : '&'
   ;
 
+minus_op : '-'
+  ;
+
 expr : exp1 ( or_op expr )*
   ;
 
@@ -122,10 +125,10 @@ exp5 : exp6 ( muldiv_op exp5 )*
   ;
 
 exp6 : '(' expr ')'
-  | var_id
+  | ( minus_op )? var_id
   | func_call
-  | INT_VAL
-  | FLOAT_VAL
+  | ( minus_op )? INT_VAL
+  | ( minus_op )? FLOAT_VAL
   | CHAR_VAL
   ;
 
@@ -168,7 +171,7 @@ FLOAT_VAL : [0-9]* '.' [0-9]+
 INT_VAL : [0-9]+
   ;
 
-CHAR_VAL : '\'' [a-zA-Z] '\''
+CHAR_VAL : '\'' [ -~] '\''
   ;
 
 STR_VAL : '"' .*? '"'

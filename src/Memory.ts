@@ -214,7 +214,7 @@ export class MemoryContext {
 export class MemoryContainer {
   private ints: number[];
   private floats: number[];
-  private chars: string[];
+  private chars: number[];
   private strings?: string[];
   private pointers?: number[];
 
@@ -238,7 +238,7 @@ export class MemoryContainer {
   ) {
     this.ints = new Array(intCount).fill(0);
     this.floats = new Array(floatCount).fill(0.0);
-    this.chars = new Array(charCount).fill(' ');
+    this.chars = new Array(charCount).fill(32);
     this.strings = new Array(stringCount).fill(' ');
     this.pointers = new Array(pointerCount).fill(0);
     this.intStart = intStart;
@@ -276,7 +276,7 @@ export class MemoryContainer {
         this.setFloat(addr, value as number);
         break;
       case ValueType.CHAR:
-        this.setChar(addr, value as string);
+        this.setChar(addr, value as number);
         break;
       case ValueType.STRING:
         this.setString(addr, value as string);
@@ -295,7 +295,7 @@ export class MemoryContainer {
     return this.floats[addr - this.floatStart];
   }
 
-  public getChar(addr: number): string {
+  public getChar(addr: number): number {
     return this.chars[addr - this.charStart];
   }
 
@@ -315,7 +315,7 @@ export class MemoryContainer {
     this.floats[addr - this.floatStart] = value;
   }
 
-  public setChar(addr: number, value: string): void {
+  public setChar(addr: number, value: number): void {
     this.chars[addr - this.charStart] = value;
   }
 
@@ -327,14 +327,14 @@ export class MemoryContainer {
     this.pointers[addr - this.pointerStart] = value;
   }
 
-  public pushValue(value: number | string, type: ValueType): number {
+  public pushValue(value: number, type: ValueType): number {
     switch (type) {
       case ValueType.INT:
-        return this.pushInt(value as number);
+        return this.pushInt(value);
       case ValueType.FLOAT:
-        return this.pushFloat(value as number);
+        return this.pushFloat(value);
       case ValueType.CHAR:
-        return this.pushChar(value as string);
+        return this.pushChar(value);
     }
   }
 
@@ -348,7 +348,7 @@ export class MemoryContainer {
     return this.floats.length - 1 + this.floatStart;
   }
 
-  public pushChar(value: string): number {
+  public pushChar(value: number): number {
     this.chars.push(value);
     return this.chars.length - 1 + this.charStart;
   }
@@ -426,7 +426,7 @@ export class DataSegment {
       let value: number | string = key;
       const type = getTypeForAddress(constantTable[key]);
 
-      if (type === ValueType.INT || type === ValueType.FLOAT) {
+      if (type === ValueType.INT || type === ValueType.FLOAT || type === ValueType.CHAR) {
         value = Number(value);
       }
 

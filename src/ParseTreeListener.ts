@@ -1,3 +1,4 @@
+import { Stack } from 'typescript-collections';
 import {ParPlusPlusListener} from './antlr/ParPlusPlusListener';
 import {
   Addsub_opContext,
@@ -39,7 +40,7 @@ export default class Listener implements ParPlusPlusListener {
   public quads: QuadrupleContext;
   private currentType: ValueType;
   private currentFunc: string;
-  private currentFuncCall: string;
+  private funcCalls: Stack<string>;
   private memory: MemoryContext;
 
   constructor() {
@@ -67,7 +68,7 @@ export default class Listener implements ParPlusPlusListener {
     this.constantTable = {};
     this.currentType = ValueType.VOID;
     this.currentFunc = 'global';
-    this.currentFuncCall = '';
+    this.funcCalls = new Stack();
     this.memory = new MemoryContext();
     this.quads = new QuadrupleContext();
   }
@@ -109,7 +110,6 @@ export default class Listener implements ParPlusPlusListener {
       const leftType = getTypeForAddress(left);
       let resultType;
 
-      console.log(leftType, rightType);
       if (leftType === ValueType.POINTER) {
         resultType = rightType;
       } else if (rightType === ValueType.POINTER) {
@@ -125,7 +125,6 @@ export default class Listener implements ParPlusPlusListener {
 
       const result = this.memory.newVar(resultType, MemoryType.Temp);
       this.quads.create(opActionPairs[index].action, left, right, result);
-      console.log(result);
       this.quads.operands.push(result);
 
       const counter =
@@ -413,9 +412,25 @@ export default class Listener implements ParPlusPlusListener {
       const variable = this.getVariable(ctx.var_id().ID().text);
 
       if (variable.vectorSize == null) {
-        console.log(variable.addr);
         this.quads.operands.push(variable.addr);
+        if (ctx.var_id().var_id_vector() != null){
+          throw new Error('Incorrect indexation');
+        }
+      } else {
+        if (ctx.var_id().var_id_vector() == null){
+          throw new Error('Incorrect indexation');
+        }
       }
+      if (variable.matrixSize == null) {
+        if (ctx.var_id().var_id_matrix() != null){
+          throw new Error('Incorrect indexation');
+        }
+      } else {
+        if (ctx.var_id().var_id_matrix() == null){
+          throw new Error('Incorrect indexation');
+        }
+      }
+
     } else if (ctx.INT_VAL() != null) {
       constName = ctx.INT_VAL().text;
       constType = ValueType.INT;
@@ -424,7 +439,14 @@ export default class Listener implements ParPlusPlusListener {
       constType = ValueType.FLOAT;
     } else if (ctx.CHAR_VAL() != null) {
       constName = ctx.CHAR_VAL().text;
+      constName = constName.substr(1, constName.length - 2);
+      constName = parseInt(constName.charCodeAt(0));
       constType = ValueType.CHAR;
+    } else if (ctx.func_call() != null) {
+      const name = ctx.func_call().ID().text;
+      if (this.funcTable[name].type === ValueType.VOID) {
+        throw new Error('Void function in expression.');
+      }
     }
 
     if (constName != null) {
@@ -543,7 +565,6 @@ export default class Listener implements ParPlusPlusListener {
 
   exitOutput_arg(ctx: Output_argContext): void {
     let res = this.quads.operands.pop();
-    console.log(this.quads.operands);
 
     if (ctx.STR_VAL() != null) {
       let constName = ctx.STR_VAL().text;
@@ -595,7 +616,7 @@ export default class Listener implements ParPlusPlusListener {
     const type = getTypeForAddress(result);
 
     // check if types match
-    if (type != ValueType.INT) {
+    if (type != ValueType.INT && type != ValueType.POINTER) {
       throw new Error('Type mismatch');
     }
 
@@ -605,7 +626,7 @@ export default class Listener implements ParPlusPlusListener {
   }
 
   exitFor_id(ctx: For_idContext): void {
-    const variable = this.getVariable(ctx.var_id().text);
+    const variable = this.getVariable(ctx.var_id().ID().text);
     const type = getTypeForAddress(variable.addr);
 
     // make sure control variable is a number
@@ -622,18 +643,19 @@ export default class Listener implements ParPlusPlusListener {
     const type = getTypeForAddress(exp);
 
     // check if correct type
-    if (type != ValueType.INT) {
+    if (type !== ValueType.INT && type !== ValueType.POINTER) {
       throw new Error('Type mismatch');
     }
 
     // make sure control variable is compatible with first expression
     const controlVar = this.quads.operands.peek();
     const controlType = getTypeForAddress(controlVar);
-    const resultType = SemanticCube[controlType][type][Op.ASSIGN];
-
-    // check if assign is possible
-    if (resultType == null) {
-      throw new Error('Type mismatch');
+    if (controlType !== ValueType.POINTER && type !== ValueType.POINTER){
+      const resultType = SemanticCube[controlType][type][Op.ASSIGN];
+      // check if assign is possible
+      if (resultType == null) {
+        throw new Error('Type mismatch');
+      }
     }
 
     // assign initial exp to control var
@@ -642,9 +664,10 @@ export default class Listener implements ParPlusPlusListener {
 
   exitFor_expr2(): void {
     const exp = this.quads.operands.pop();
-
+    const type = getTypeForAddress(exp);
+    
     // make sure expression is compatible type
-    if (getTypeForAddress(exp) != ValueType.INT) {
+    if (type !== ValueType.INT && type !== ValueType.POINTER) {
       throw new Error('Type mismatch.');
     }
 
@@ -703,7 +726,7 @@ export default class Listener implements ParPlusPlusListener {
   enterFunc_call(ctx: Func_callContext): void {
     const name = ctx.ID().text;
     const func = this.funcTable[name];
-    this.currentFuncCall = name;
+    this.funcCalls.push(name);
 
     if (this.funcTable[name] == null) {
       throw new Error(`Function ${name} not declared.`);
@@ -726,7 +749,9 @@ export default class Listener implements ParPlusPlusListener {
   }
 
   exitFunc_call(ctx: Func_callContext): void {
-    const func = this.funcTable[this.currentFuncCall];
+    const currentFuncCall = this.funcCalls.peek();
+    const func = this.funcTable[currentFuncCall];
+    console.log(currentFuncCall)
 
     // check if empty params
     if (ctx.func_call_args() == null) {
@@ -750,11 +775,12 @@ export default class Listener implements ParPlusPlusListener {
 
       this.quads.create(
         QuadrupleAction.ASSIGN,
-        this.funcTable['global'].vars[this.currentFuncCall + '()'].addr,
+        this.funcTable['global'].vars[currentFuncCall + '()'].addr,
         null,
         tempAddr,
       );
       this.quads.operands.push(tempAddr);
+      this.funcCalls.pop();
     }
 
     this.quads.operators.pop();
@@ -772,7 +798,7 @@ export default class Listener implements ParPlusPlusListener {
 
     // generate quads
     for (let i = 0; i < params.length; i++) {
-      const func = this.funcTable[this.currentFuncCall];
+      const func = this.funcTable[this.funcCalls.peek()];
       if (params[i].type !== ValueType.POINTER && params[i].type != func.params[i].type) {
         throw new Error(`On function ${func.name} incorrect parameter type.`);
       }

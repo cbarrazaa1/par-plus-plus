@@ -1,0 +1,14 @@
+program Chars;
+var
+  char a, b, c;
+  char arr[5];
+
+main() {
+  a = 'a' + 1;
+  b = 'b' + 2;
+  c = 'c' + 3;
+
+  write(a, b, c);
+  write(a < b);
+  write(b > c);
+}
