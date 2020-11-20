@@ -15,7 +15,7 @@ void module rec(int x) {
 }
 
 int module fact(int n) {
-  if (n <= 1) {
+  if (n <= 1) then {
     return (1);
   }
 
@@ -23,10 +23,10 @@ int module fact(int n) {
 }
 
 int module fib(int n) {
-  if (n == 0) {
+  if (n == 0) then {
     return (0);
   } else {
-    if (n == 1) {
+    if (n == 1) then {
       return (1);
     }
   }
@@ -44,5 +44,6 @@ main() {
   write(test(10));
   write(fact(6));
   write(fib(10));
+  write(fibIter(10));
   rec(5);
 }

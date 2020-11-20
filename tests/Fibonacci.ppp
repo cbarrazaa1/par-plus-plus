@@ -1,0 +1,34 @@
+program Fibonacci;
+
+int module fib(int n) {
+  if (n == 0) then {
+    return (0);
+  } else {
+    if (n == 1) then {
+      return (1);
+    }
+  }
+
+  return (fib(n - 1) + fib(n - 2));
+}
+
+int module fibIter(int n)
+var int prevPrev, prev, curr, i;
+{
+  prevPrev = 0;
+  prev = 0;
+  curr = 1;
+  
+  for i = 1 to n do {
+    prevPrev = prev;
+    prev = curr;
+    curr = prev + prevPrev; 
+  }
+
+  return (prev);
+}
+
+main() {
+  write(fib(10));
+  write(fibIter(10));
+}

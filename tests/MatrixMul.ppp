@@ -23,4 +23,10 @@ main() {
       }
     }
   }
+
+  for i = 0 to 1 do {
+    for j = 0 to 1 do {
+      write(C[i][j]);
+    }
+  }
 }

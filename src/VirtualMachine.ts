@@ -42,9 +42,9 @@ export class VirtualMachine {
   private quads: Quadruple[];
   private constantTable: ConstantTable;
   private ds: DataSegment;
-  private stack: Stack<ActivationRecord>;
+  private ss: Stack<ActivationRecord>;
+  private visitedFunctions: Stack<ActivationRecord>;
   private jumps: Stack<number>;
-  private currentFunc: ActivationRecord | null;
   private ip: number;
   private paramCountStack: Stack<number>;
 
@@ -54,9 +54,9 @@ export class VirtualMachine {
     this.constantTable = obj.constTable as ConstantTable;
     this.ip = 0;
     this.ds = new DataSegment(this.funcTable['global'], this.constantTable);
-    this.stack = new Stack();
+    this.ss = new Stack();
+    this.visitedFunctions = new Stack();
     this.jumps = new Stack();
-    this.currentFunc = null;
     this.paramCountStack = new Stack();
   }
 
@@ -66,14 +66,13 @@ export class VirtualMachine {
     if (memoryType === MemoryType.Global) {
       return this.ds.globals.getValue(addr);
     } else if (memoryType === MemoryType.Local) {
-      return this.currentFunc.locals.getValue(addr);
+      return this.visitedFunctions.peek().locals.getValue(addr);
     } else if (memoryType === MemoryType.Temp) {
-      console.log(this.currentFunc, addr);
-      if (this.currentFunc == null) {
+      if (this.visitedFunctions.peek() == null) {
         return this.ds.temps.getValue(addr);
       }
 
-      return this.currentFunc.temps.getValue(addr);
+      return this.visitedFunctions.peek().temps.getValue(addr);
     } else {
       return this.ds.constants.getValue(addr);
     }
@@ -85,30 +84,26 @@ export class VirtualMachine {
     if (memoryType === MemoryType.Global) {
       this.ds.globals.setValue(addr, value);
     } else if (memoryType === MemoryType.Local) {
-      this.currentFunc.locals.setValue(addr, value);
+      this.visitedFunctions.peek().locals.setValue(addr, value);
     } else if (memoryType === MemoryType.Temp) {
-      if (this.currentFunc == null) {
+      if (this.visitedFunctions.peek() == null) {
         this.ds.temps.setValue(addr, value);
       } else {
-        this.currentFunc.temps.setValue(addr, value);
+        this.visitedFunctions.peek().temps.setValue(addr, value);
       }
     }
   }
 
   private setParam(addr: number, value: number | string): void {
-    this.stack.peek().locals.setValue(addr, value);
-  }
-
-  private getParam(addr: number): number | string {
-    return this.stack.peek().temps.getValue(addr);
+    this.ss.peek().locals.setValue(addr, value);
   }
 
   private pushValue(value: number, type: ValueType): number {
-    if (this.currentFunc == null) {
+    if (this.visitedFunctions.peek() == null) {
       return this.ds.temps.pushValue(value, type);
     }
 
-    return this.currentFunc.temps.pushValue(value, type);
+    return this.visitedFunctions.peek().temps.pushValue(value, type);
   }
 
   private binaryOperationFunc(quad: Quadruple) {
@@ -279,15 +274,21 @@ export class VirtualMachine {
           this.ip = quad.result as number;
           continue;
         case QuadrupleAction.GOSUB:
-          this.currentFunc = this.stack.peek();
+          // push visited function
+          this.visitedFunctions.push( 
+            this.ss.peek(),
+            // new ActivationRecord(
+            //   this.funcTable[quad.result],
+            //   quad.result as string,
+            // ),
+          );
           this.jumps.push(this.ip + 1);
           this.ip = quad.result as number;
           this.paramCountStack.pop();
           continue;
         case QuadrupleAction.ERA:
           this.paramCountStack.push(0);
-          this.currentFunc = this.stack.peek();
-          this.stack.push(
+          this.ss.push(
             new ActivationRecord(
               this.funcTable[quad.result],
               quad.result as string,
@@ -295,10 +296,8 @@ export class VirtualMachine {
           );
           break;
         case QuadrupleAction.PARAM:
-          console.log(this.stack);
           right = this.getValue(quad.right as number);
-          const func = this.funcTable[this.stack.peek().name];
-          console.log(func.params, this.paramCountStack.peek(), quad.right, right);
+          const func = this.funcTable[this.ss.peek().name];
 
           if (getTypeForAddress(quad.right as number) === ValueType.POINTER) {
             const rightType = getTypeForAddress(right);
@@ -323,8 +322,9 @@ export class VirtualMachine {
             this.setValue(quad.result as number, left);
           }
 
-          this.stack.pop();
-          this.currentFunc = this.stack.peek();
+          // End of functon
+          this.ss.pop();
+          this.visitedFunctions.pop();
 
           // check if in main
           if (this.jumps.size() === 0) {
@@ -334,8 +334,9 @@ export class VirtualMachine {
           }
           continue;
         case QuadrupleAction.ENDFUNC:
-          this.stack.pop();
-          this.currentFunc = this.stack.peek();
+          // End of function
+          this.ss.pop();
+          this.visitedFunctions.pop();
           this.ip = this.jumps.pop();
           continue;
         case QuadrupleAction.VERIFY:

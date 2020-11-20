@@ -101,14 +101,20 @@ export class MemoryContext {
   }
 
   public newInt(type: MemoryType): number {
+    console.log('NewInt');
+
     switch (type) {
       case MemoryType.Global:
+        this.validateRange(this.globalInts + 1, GLOBAL_FLOAT);
         return this.globalInts++;
       case MemoryType.Local:
+        this.validateRange(this.localInts + 1, LOCAL_FLOAT);
         return this.localInts++;
       case MemoryType.Temp:
+        this.validateRange(this.tempInts + 1, TEMP_FLOAT);
         return this.tempInts++;
       case MemoryType.Constant:
+        this.validateRange(this.constInts, CONST_FLOAT);
         return this.constInts++;
     }
   }
@@ -116,12 +122,16 @@ export class MemoryContext {
   public newFloat(type: MemoryType): number {
     switch (type) {
       case MemoryType.Global:
+        this.validateRange(this.globalFloats + 1, GLOBAL_CHAR);
         return this.globalFloats++;
       case MemoryType.Local:
+        this.validateRange(this.localFloats + 1, LOCAL_CHAR);
         return this.localFloats++;
       case MemoryType.Temp:
+        this.validateRange(this.tempFloats + 1, TEMP_CHAR);
         return this.tempFloats++;
       case MemoryType.Constant:
+        this.validateRange(this.constFloats + 1, CONST_CHAR);
         return this.constFloats++;
     }
   }
@@ -129,21 +139,27 @@ export class MemoryContext {
   public newChar(type: MemoryType): number {
     switch (type) {
       case MemoryType.Global:
+        this.validateRange(this.globalChars + 1, LOCAL_INT);
         return this.globalChars++;
       case MemoryType.Local:
+        this.validateRange(this.localChars + 1, TEMP_INT);
         return this.localChars++;
       case MemoryType.Temp:
+        this.validateRange(this.tempChars + 1, TEMP_PTR);
         return this.tempChars++;
       case MemoryType.Constant:
+        this.validateRange(this.constChars + 1, CONST_STR);
         return this.constChars++;
     }
   }
 
   public newString(): number {
+    this.validateRange(this.constStrings + 1, CONST_STR + 1000);
     return this.constStrings++;
   }
 
   public newPointer(): number {
+    this.validateRange(this.tempPointers + 1, CONST_INT);
     return this.tempPointers++;
   }
 
@@ -162,12 +178,15 @@ export class MemoryContext {
   }
 
   public addIntArray(size: number, memoryType: MemoryType): void {
+    console.log('AddIntArray')
     // subtract one to size because initial address of variable is set when declared
     switch (memoryType) {
       case MemoryType.Global:
+        this.validateRange(this.globalInts + size - 2, GLOBAL_FLOAT);
         this.globalInts += size - 1;
         break;
       case MemoryType.Local:
+        this.validateRange(this.localInts + size - 2, LOCAL_FLOAT);
         this.localInts += size - 1;
         break;
     }
@@ -177,9 +196,11 @@ export class MemoryContext {
     // subtract one to size because initial address of variable is set when declared
     switch (memoryType) {
       case MemoryType.Global:
+        this.validateRange(this.globalFloats + size - 2, GLOBAL_CHAR);
         this.globalFloats += size - 1;
         break;
       case MemoryType.Local:
+        this.validateRange(this.localFloats + size - 2, LOCAL_CHAR);
         this.localFloats += size - 1;
         break;
     }
@@ -189,9 +210,11 @@ export class MemoryContext {
     // subtract one to size because initial address of variable is set when declared
     switch (memoryType) {
       case MemoryType.Global:
+        this.validateRange(this.globalChars + size - 2, LOCAL_INT);
         this.globalChars += size - 1;
         break;
       case MemoryType.Local:
+        this.validateRange(this.localChars + size - 2, TEMP_INT);
         this.localChars += size - 1;
         break;
     }
@@ -208,6 +231,12 @@ export class MemoryContext {
     this.tempFloats = TEMP_FLOAT;
     this.tempChars = TEMP_CHAR;
     this.tempPointers = TEMP_PTR;
+  }
+
+  private validateRange(count: number, range: number): void {
+    if (count >= range) {
+      throw new Error('Out of memory.');
+    }
   }
 }
 

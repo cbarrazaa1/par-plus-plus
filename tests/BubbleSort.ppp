@@ -1,4 +1,4 @@
-program TestBubbleSort;
+program BubbleSort;
 var
    int arr[5];
 

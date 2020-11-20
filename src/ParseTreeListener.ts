@@ -414,20 +414,20 @@ export default class Listener implements ParPlusPlusListener {
       if (variable.vectorSize == null) {
         this.quads.operands.push(variable.addr);
         if (ctx.var_id().var_id_vector() != null){
-          throw new Error('Incorrect indexation');
+          throw new Error(`Incorrect indexation: variable ${ctx.var_id().ID().text} is not a vector`);
         }
       } else {
         if (ctx.var_id().var_id_vector() == null){
-          throw new Error('Incorrect indexation');
+          throw new Error(`Incorrect indexation: expected indexation on variable ${ctx.var_id().ID().text}`);
         }
       }
       if (variable.matrixSize == null) {
         if (ctx.var_id().var_id_matrix() != null){
-          throw new Error('Incorrect indexation');
+          throw new Error(`Incorrect indexation: variable ${ctx.var_id().ID().text} is not a matrix`);
         }
       } else {
         if (ctx.var_id().var_id_matrix() == null){
-          throw new Error('Incorrect indexation');
+          throw new Error(`Incorrect indexation: expected matrix indexation on variable ${ctx.var_id().ID().text}`);
         }
       }
 
