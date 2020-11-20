@@ -34,6 +34,7 @@ import { Addsub_opContext } from "./ParPlusPlusParser";
 import { Muldiv_opContext } from "./ParPlusPlusParser";
 import { Or_opContext } from "./ParPlusPlusParser";
 import { And_opContext } from "./ParPlusPlusParser";
+import { Minus_opContext } from "./ParPlusPlusParser";
 import { ExprContext } from "./ParPlusPlusParser";
 import { Exp1Context } from "./ParPlusPlusParser";
 import { Exp2Context } from "./ParPlusPlusParser";
@@ -396,6 +397,17 @@ export interface ParPlusPlusListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	exitAnd_op?: (ctx: And_opContext) => void;
+
+	/**
+	 * Enter a parse tree produced by `ParPlusPlusParser.minus_op`.
+	 * @param ctx the parse tree
+	 */
+	enterMinus_op?: (ctx: Minus_opContext) => void;
+	/**
+	 * Exit a parse tree produced by `ParPlusPlusParser.minus_op`.
+	 * @param ctx the parse tree
+	 */
+	exitMinus_op?: (ctx: Minus_opContext) => void;
 
 	/**
 	 * Enter a parse tree produced by `ParPlusPlusParser.expr`.

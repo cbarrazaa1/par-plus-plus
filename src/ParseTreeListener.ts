@@ -432,10 +432,10 @@ export default class Listener implements ParPlusPlusListener {
       }
 
     } else if (ctx.INT_VAL() != null) {
-      constName = ctx.INT_VAL().text;
+      constName = (ctx.minus_op() != null ? '-' : '') + ctx.INT_VAL().text;
       constType = ValueType.INT;
     } else if (ctx.FLOAT_VAL() != null) {
-      constName = ctx.FLOAT_VAL().text;
+      constName = (ctx.minus_op() != null ? '-' : '') + ctx.FLOAT_VAL().text;
       constType = ValueType.FLOAT;
     } else if (ctx.CHAR_VAL() != null) {
       constName = ctx.CHAR_VAL().text;

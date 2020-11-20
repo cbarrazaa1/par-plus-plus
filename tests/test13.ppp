@@ -1,0 +1,14 @@
+program Ejemplo13;
+var int vari, arr[5];
+
+int module hola(int x, int y, int z) {
+    return (x + y);
+}
+
+int module hola2(int x) {
+    return (x + 1);
+}
+
+main() {
+  write(hola(arr[0], hola2(vari), 0));
+}

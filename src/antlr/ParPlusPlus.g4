@@ -125,7 +125,7 @@ exp5 : exp6 ( muldiv_op exp5 )*
   ;
 
 exp6 : '(' expr ')'
-  | ( minus_op )? var_id
+  | var_id
   | func_call
   | ( minus_op )? INT_VAL
   | ( minus_op )? FLOAT_VAL

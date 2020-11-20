@@ -1,7 +1,12 @@
 program Ejemplo12;
 var
   int B[10][10], i, j, k;
+  float f;
 
 main() {
-  i = B[i + j][k * j] + j;
+  f = 0.1;
+  while (f <= 10) do {
+    write(f);
+    f = f + 1;
+  }
 }
