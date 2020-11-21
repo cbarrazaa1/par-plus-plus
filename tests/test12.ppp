@@ -1,12 +1,8 @@
 program Ejemplo12;
 var
-  int B[10][10], i, j, k;
-  float f;
+  int x, y, A[3];
 
 main() {
-  f = 0.1;
-  while (f <= 10) do {
-    write(f);
-    f = f + 1;
-  }
+  read(A[0], A[1], A[2], x, y);
+  write(A[0] + A[1] + A[2] + x, y);
 }

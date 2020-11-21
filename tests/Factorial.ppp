@@ -20,6 +20,6 @@ int module factIter(int n)
 }
 
 main() {
-  write("Factorial recursivo:", fact(6));
-  write("Factorial iterativo:", factIter(6));
+  write("Factorial recursivo: ", fact(6), "\n");
+  write("Factorial iterativo: ", factIter(6), "\n");
 }

@@ -228,7 +228,14 @@ export class VirtualMachine {
           const isFloat = !isNaN(float);
           const isInt = !isNaN(int) && input.indexOf('.') === -1;
           const isChar = !isFloat && !isInt && input.length === 1;
-          const type = getTypeForAddress(quad.result as number);
+          let resRead = quad.result as number;
+          let type = getTypeForAddress(quad.result as number);
+
+          if (type === ValueType.POINTER) {
+            resRead = this.getValue(quad.result as number) as number;
+            type = getTypeForAddress(resRead);
+          }
+
           if (type === ValueType.INT && !isInt) {
             throw new Error('Invalid type');
           } else if (type === ValueType.FLOAT && !isFloat) {
@@ -237,7 +244,7 @@ export class VirtualMachine {
             throw new Error('Invalid type');
           } else {
             const res = isFloat ? float : isInt ? int : input;
-            this.setValue(quad.result as number, res);
+            this.setValue(resRead, res);
           }
 
           break;

@@ -10,7 +10,7 @@ import {VirtualMachine} from './VirtualMachine';
 import ErrorHandler from './ErrorHandler';
 
 function main(): void {
-  const fileName = 'tests/Crazy';
+  const fileName = 'tests/MatrixMul';
 
   // compile
   const inputText = readFileSync(`${fileName}.ppp`, 'utf-8');

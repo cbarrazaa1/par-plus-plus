@@ -564,7 +564,7 @@ export default class Listener implements ParPlusPlusListener {
   }
 
   exitOutput_arg(ctx: Output_argContext): void {
-    let res = this.quads.operands.pop();
+    let res;
 
     if (ctx.STR_VAL() != null) {
       let constName = ctx.STR_VAL().text;
@@ -576,6 +576,8 @@ export default class Listener implements ParPlusPlusListener {
       }
 
       res = addr;
+    } else {
+      res = this.quads.operands.pop();
     }
 
     if (res == null) {
@@ -587,11 +589,21 @@ export default class Listener implements ParPlusPlusListener {
 
   exitInput_args(ctx: Input_argsContext): void {
     const ids = ctx.var_id();
+    const addresses = [];
+
+    while (!this.quads.operands.isEmpty()) {
+      addresses.push(this.quads.operands.pop());
+    }
 
     // create read quad for every argument
     for (let i = 0; i < ids.length; i++) {
-      const variable = this.getVariable(ids[i].text);
-      this.quads.create(QuadrupleAction.READ, null, null, variable.addr);
+      const variable = this.getVariable(ids[i].ID().text);
+      let addr = variable.addr;
+
+      if (addresses.length > 0) {
+        addr = addresses.pop();
+      }
+      this.quads.create(QuadrupleAction.READ, null, null, addr);
     }
   }
 
