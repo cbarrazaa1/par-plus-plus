@@ -237,13 +237,15 @@ export class VirtualMachine {
           }
 
           if (type === ValueType.INT && !isInt) {
-            throw new Error('Invalid type');
+            throw new Error('Invalid type: expected int');
           } else if (type === ValueType.FLOAT && !isFloat) {
-            throw new Error('Invalid type');
+            throw new Error('Invalid type: expected float');
           } else if (type === ValueType.CHAR && !isChar) {
-            throw new Error('Invalid type');
+            if (!(isInt && input.length === 1)) {
+              throw new Error('Invalid type: expected char');
+            }
           } else {
-            const res = isFloat ? float : isInt ? int : input;
+            const res = isFloat ? float : isInt ? int : input.charCodeAt(0);
             this.setValue(resRead, res);
           }
 
@@ -367,9 +369,5 @@ export class VirtualMachine {
 
       this.ip++;
     }
-
-    console.log(this.ds.globals);
-    console.log(this.ds.temps);
-    console.log(this.ds.constants);
   }
 }

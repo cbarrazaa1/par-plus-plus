@@ -8,9 +8,10 @@ import {ParPlusPlusListener} from './antlr/ParPlusPlusListener';
 import {ValueType} from './semantics/Types';
 import {VirtualMachine} from './VirtualMachine';
 import ErrorHandler from './ErrorHandler';
+import readline from 'readline-sync';
 
 function main(): void {
-  const fileName = 'tests/MatrixMul';
+  const fileName = readline.question('Nombre de archivo: ');
 
   // compile
   const inputText = readFileSync(`${fileName}.ppp`, 'utf-8');

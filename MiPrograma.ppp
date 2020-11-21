@@ -1,0 +1,24 @@
+program MiPrograma;
+var
+  int arr[5], i;
+
+int module fact(int x) {
+  if (x <= 1) then {
+    return (1);
+  }
+
+  return (x * fact(x - 1));
+}
+
+main() {
+  arr[0] = 2;
+  arr[1] = 3;
+  arr[2] = 4;
+  arr[3] = 5;
+  arr[4] = 6;
+
+  write("Factoriales");
+  for i = 0 to 4 do {
+    write(fact(arr[i]));
+  }
+}
