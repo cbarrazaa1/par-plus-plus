@@ -34,6 +34,9 @@ import {
 } from './semantics/SymbolTable';
 import {stringToValueType, ValueType} from './semantics/Types';
 
+/**
+ * Class that listens to the parse tree and does all the semantic actions.
+ */
 export default class Listener implements ParPlusPlusListener {
   public funcTable: FuncTable;
   public constantTable: ConstantTable;
@@ -42,7 +45,9 @@ export default class Listener implements ParPlusPlusListener {
   private currentFunc: string;
   private funcCalls: Stack<string>;
   private memory: MemoryContext;
-
+  /**
+   * Initializes tables and stacks
+   */
   constructor() {
     this.funcTable = {
       global: {
@@ -72,7 +77,10 @@ export default class Listener implements ParPlusPlusListener {
     this.memory = new MemoryContext();
     this.quads = new QuadrupleContext();
   }
-
+  /**
+   * Returns VarsTableRow in the local context if exist and in the global context
+   * @param name name of the variable
+   */
   private getVariable(name: string): VarsTableRow {
     let variable = this.funcTable[this.currentFunc].vars[name];
 
@@ -85,7 +93,10 @@ export default class Listener implements ParPlusPlusListener {
 
     return variable;
   }
-
+  /**
+   * Helper that performs shared operations for expressions.
+   * @param opActionPairs 
+   */
   private expHelper(opActionPairs: {op: Op; action: QuadrupleAction}[]): void {
     // if we're on false bottom, skip
     if (this.quads.operators.peek() == Op.FalseBottom) {
@@ -141,11 +152,17 @@ export default class Listener implements ParPlusPlusListener {
   }
 
   // Listener Implementation
+  
+  /**
+   * On enter program, create the go to main quadruple
+   */
   enterProgram(): void {
     this.quads.create(QuadrupleAction.GOTO, null, null, null);
     this.quads.jumps.push(0);
   }
-
+  /**
+   * On enter main solve go to main quadruple and update current func and stack
+   */
   enterMain_function(): void {
     this.currentFunc = 'global';
     this.memory.resetTemporals();
@@ -153,21 +170,29 @@ export default class Listener implements ParPlusPlusListener {
     const size = this.quads.size();
     this.quads.fill(n, size);
   }
-
+  /**
+   * On exit main create END quadruple
+   */
   exitMain_function(): void {
     this.quads.create(QuadrupleAction.END, null, null, null);
   }
-
+  /**
+   * On exit program print functable, quads, and constant table
+   */
   exitProgram(): void {
     printFuncTable(this.funcTable);
     this.quads.print();
     console.table(this.constantTable);
   }
-
+  /**
+   * On exit type set current type
+   */
   exitType(ctx: TypeContext): void {
     this.currentType = stringToValueType(ctx.text);
   }
-
+  /**
+   * On exit variable id declaration validate and save variable in virtual memory
+   */
   exitVar_id_decl(ctx: Var_id_declContext): void {
     const id = ctx.ID().text;
     const memType =
@@ -235,7 +260,9 @@ export default class Listener implements ParPlusPlusListener {
     variable.vectorSize = vectorSize == null ? null : Number(vectorSize);
     variable.matrixSize = matrixSize == null ? null : Number(matrixSize);
   }
-
+  /**
+   * On enter function validate function and create function table entry
+   */
   enterFunction(ctx: FunctionContext): void {
     const name = ctx.ID().text;
     const type = stringToValueType(
@@ -282,11 +309,15 @@ export default class Listener implements ParPlusPlusListener {
       };
     }
   }
-
+  /**
+   * On exit function create ENDFUNC quadruple
+   */
   exitFunction(): void {
     this.quads.create(QuadrupleAction.ENDFUNC, null, null, null);
   }
-
+  /**
+   * On exit return validate function type and create RET quadruple
+   */
   exitReturn_stmt(ctx: Return_stmtContext): void {
     const type = this.funcTable[this.currentFunc].type;
     if (ctx.expr() == null) {
@@ -308,7 +339,9 @@ export default class Listener implements ParPlusPlusListener {
         : this.funcTable['global'].vars[this.currentFunc + '()'].addr,
     );
   }
-
+  /**
+   * On exit function parameters validate parameters and add to variable table to the function row
+   */
   exitFunc_params(ctx: Func_paramsContext): void {
     const n = ctx.type().length;
     const names = ctx.ID();
@@ -336,7 +369,9 @@ export default class Listener implements ParPlusPlusListener {
       this.funcTable[this.currentFunc].params.push({type, addr});
     }
   }
-
+  /**
+   * On exit assignment validate types and create ASSIGN quadruple
+   */
   exitAssignment(ctx: AssignmentContext): void {
     const variable = this.getVariable(ctx.var_id().ID().text);
     let type = getTypeForAddress(this.quads.operands.peek());
@@ -357,29 +392,39 @@ export default class Listener implements ParPlusPlusListener {
       variable.vectorSize != null ? this.quads.operands.pop() : variable.addr,
     );
   }
-
+  /**
+   * On exit expression pop false bottom
+   */
   exitExpr(): void {
     // remove stack false bottom
     if (this.quads.operators.peek() == Op.FalseBottom) {
       this.quads.operators.pop();
     }
   }
-
+  /**
+   * On exit exp1 call expHelper
+   */
   exitExp1(): void {
     this.expHelper([{op: Op.OR, action: QuadrupleAction.OR}]);
   }
-
+  /**
+   * On exit exp2 call expHelper
+   */
   exitExp2(): void {
     this.expHelper([{op: Op.AND, action: QuadrupleAction.AND}]);
   }
-
+  /**
+   * On exit exp3 call expHelper
+   */
   exitExp3(): void {
     this.expHelper([
       {op: Op.EQ, action: QuadrupleAction.EQ},
       {op: Op.NEQ, action: QuadrupleAction.NEQ},
     ]);
   }
-
+  /**
+   * On exit exp4 call expHelper
+   */
   exitExp4(): void {
     this.expHelper([
       {op: Op.LT, action: QuadrupleAction.LT},
@@ -388,21 +433,27 @@ export default class Listener implements ParPlusPlusListener {
       {op: Op.LTE, action: QuadrupleAction.LTE},
     ]);
   }
-
+  /**
+   * On exit exp5 call expHelper
+   */
   exitExp5(): void {
     this.expHelper([
       {op: Op.ADD, action: QuadrupleAction.ADD},
       {op: Op.SUB, action: QuadrupleAction.SUB},
     ]);
   }
-
+  /**
+   * On enter exp6 push false bottom if there is a parentheses 
+   */
   enterExp6(ctx: Exp6Context): void {
     // add false bottom if we reach nested expression
     if (ctx.expr() != null) {
       this.quads.operators.push(Op.FalseBottom);
     }
   }
-
+  /**
+   * Getn and validate variable or constant, on exit exp6 call expHelper
+   */
   exitExp6(ctx: Exp6Context): void {
     let constName = null;
     let constType = null;
@@ -466,19 +517,27 @@ export default class Listener implements ParPlusPlusListener {
       {op: Op.DIV, action: QuadrupleAction.DIV},
     ]);
   }
-
+  /**
+   * On exit addsubb operator push to operators stack
+   */
   exitAddsub_op(ctx: Addsub_opContext): void {
     this.quads.operators.push(ctx.text === '+' ? Op.ADD : Op.SUB);
   }
-
+  /**
+   * On exit muldiv operator push to operators stack
+   */
   exitMuldiv_op(ctx: Muldiv_opContext): void {
     this.quads.operators.push(ctx.text === '*' ? Op.MUL : Op.DIV);
   }
-
+  /**
+   * On exit eq operator push to operators stack
+   */
   exitEq_op(ctx: Eq_opContext): void {
     this.quads.operators.push(ctx.text === '==' ? Op.EQ : Op.NEQ);
   }
-
+  /**
+   * On exit rel operator push to operators stack
+   */
   exitRel_op(ctx: Rel_opContext): void {
     let op = Op.GT;
 
@@ -499,15 +558,21 @@ export default class Listener implements ParPlusPlusListener {
 
     this.quads.operators.push(op);
   }
-
+  /**
+   * On exit and operator push to operators stack
+   */
   exitAnd_op(): void {
     this.quads.operators.push(Op.AND);
   }
-
+  /**
+   * On exit or operator push to operators stack
+   */
   exitOr_op(): void {
     this.quads.operators.push(Op.OR);
   }
-
+  /**
+   * On enter statement check and validate function 
+   */
   enterStatement(ctx: StatementContext): void {
     if (ctx.func_call() != null) {
       const name = ctx.func_call().ID().text;
@@ -521,7 +586,9 @@ export default class Listener implements ParPlusPlusListener {
       }
     }
   }
-
+  /**
+   * On exit if validate expression type, create relevant quadruples
+   */
   exitIf_expr(): void {
     // make sure it's int for bool check
     const type = getTypeForAddress(this.quads.operands.peek());
@@ -540,7 +607,9 @@ export default class Listener implements ParPlusPlusListener {
     // store migaja de pan
     this.quads.jumps.push(this.quads.size() - 1);
   }
-
+  /**
+   * On exit if statement fill jump quadruple
+   */
   exitIf_stmt(): void {
     const end = this.quads.jumps.pop();
     const size = this.quads.size();
@@ -548,7 +617,9 @@ export default class Listener implements ParPlusPlusListener {
     // fill else goto
     this.quads.fill(end, size);
   }
-
+  /**
+   * On enter else statement create relevant quadruples
+   */
   enterElse_stmt(ctx: Else_stmtContext): void {
     // if there's no else, do nothing
     if (ctx.block() == null) {
@@ -567,7 +638,9 @@ export default class Listener implements ParPlusPlusListener {
     // fill gotof jump
     this.quads.fill(end, size);
   }
-
+  /**
+   * On exit output arguments validate values, get string if needed and create WRITE quadruple
+   */
   exitOutput_arg(ctx: Output_argContext): void {
     let res;
 
@@ -591,7 +664,10 @@ export default class Listener implements ParPlusPlusListener {
 
     this.quads.create(QuadrupleAction.WRITE, null, null, res);
   }
-
+  /**
+   * 
+   * @param ctx 
+   */
   exitInput_args(ctx: Input_argsContext): void {
     const ids = ctx.var_id();
     const addresses: number[] = [];
