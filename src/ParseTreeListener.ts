@@ -665,8 +665,7 @@ export default class Listener implements ParPlusPlusListener {
     this.quads.create(QuadrupleAction.WRITE, null, null, res);
   }
   /**
-   * 
-   * @param ctx 
+   * On exit input arguments get addresses and create READ quadruples
    */
   exitInput_args(ctx: Input_argsContext): void {
     const ids = ctx.var_id();
@@ -707,12 +706,16 @@ export default class Listener implements ParPlusPlusListener {
       this.quads.create(QuadrupleAction.READ, null, null, addr);
     }
   }
-
+  /**
+   * On enter while update jumps stack
+   */
   enterWhile_stmt(): void {
     // store migaja de pan
     this.quads.jumps.push(this.quads.size());
   }
-
+  /**
+   * On exit while update jumps stack, create GOTO quadruple and fill jump quadruple
+   */
   exitWhile_stmt(): void {
     const end = this.quads.jumps.pop();
     const ret = this.quads.jumps.pop();
@@ -723,7 +726,9 @@ export default class Listener implements ParPlusPlusListener {
     // fill initial gotof
     this.quads.fill(end, this.quads.size());
   }
-
+  /**
+   * On exit while expression verify type and create relevant quadruple
+   */
   exitWhile_expr(): void {
     const result = this.quads.operands.pop();
     const type = getTypeForAddress(result);
@@ -737,7 +742,9 @@ export default class Listener implements ParPlusPlusListener {
     this.quads.create(QuadrupleAction.GOTOF, result, null, null);
     this.quads.jumps.push(this.quads.size() - 1);
   }
-
+  /**
+   * On exit for id varify type and push to operands stack
+   */
   exitFor_id(ctx: For_idContext): void {
     const variable = this.getVariable(ctx.var_id().ID().text);
     const type = getTypeForAddress(variable.addr);
@@ -750,7 +757,9 @@ export default class Listener implements ParPlusPlusListener {
     // store control variable
     this.quads.operands.push(variable.addr);
   }
-
+  /**
+   * On exit first for expression validate types and create ASSIGNS quadruple
+   */
   exitFor_expr1(): void {
     const exp = this.quads.operands.pop();
     const type = getTypeForAddress(exp);
@@ -774,7 +783,9 @@ export default class Listener implements ParPlusPlusListener {
     // assign initial exp to control var
     this.quads.create(QuadrupleAction.ASSIGN, exp, null, controlVar);
   }
-
+  /**
+   * On exit second for expression validate types update jump stacks and create relevant quadruples
+   */
   exitFor_expr2(): void {
     const exp = this.quads.operands.pop();
     const type = getTypeForAddress(exp);
@@ -805,7 +816,9 @@ export default class Listener implements ParPlusPlusListener {
     // create miagaja de pan to fill gotof later
     this.quads.jumps.push(this.quads.size() - 1);
   }
-
+  /**
+   * On exit for statement create quadruple to add to the control variable
+   */
   exitFor_stmt(): void {
     const controlVar = this.quads.operands.pop();
 
@@ -835,7 +848,9 @@ export default class Listener implements ParPlusPlusListener {
     // fill initial gotof of for
     this.quads.fill(end, this.quads.size());
   }
-
+  /**
+   * On enter func call validate function name push false bottom and create ERA quadruple
+   */
   enterFunc_call(ctx: Func_callContext): void {
     const name = ctx.ID().text;
     const func = this.funcTable[name];
@@ -860,7 +875,9 @@ export default class Listener implements ParPlusPlusListener {
     this.quads.create(QuadrupleAction.ERA, null, null, name);
     this.quads.operators.push(Op.FunctionFalseBottom);
   }
-
+  /**
+   * On exit func call create GOSUB quadruple and ASSIGN quadruple when function is not void
+   */
   exitFunc_call(ctx: Func_callContext): void {
     const currentFuncCall = this.funcCalls.peek();
     const func = this.funcTable[currentFuncCall];
@@ -898,7 +915,9 @@ export default class Listener implements ParPlusPlusListener {
 
     this.quads.operators.pop();
   }
-
+  /**
+   * On exit func call args check parameters and create PARAM quadruples
+   */
   exitFunc_call_args(ctx: Func_call_argsContext): void {
     const exps = ctx.expr();
     const params = [];
@@ -923,7 +942,9 @@ export default class Listener implements ParPlusPlusListener {
       );
     }
   }
-
+  /**
+   * On enter var id if array push to array stack
+   */
   enterVar_id(ctx: Var_idContext): void {
     if (ctx.var_id_vector() == null) {
       return;
@@ -931,7 +952,9 @@ export default class Listener implements ParPlusPlusListener {
 
     this.quads.arrayIds.push(ctx.ID().text);
   }
-
+  /**
+   * On exit var id if array pop of array stack
+   */
   exitVar_id(ctx: Var_idContext): void {
     if (ctx.var_id_vector() == null) {
       return;
@@ -939,11 +962,16 @@ export default class Listener implements ParPlusPlusListener {
 
     this.quads.arrayIds.pop();
   }
-
+  /**
+   * On enter var id vector push false bottom
+   */
   enterVar_id_vector(ctx: Var_id_vectorContext): void {
     this.quads.operators.push(Op.ArrayFalseBottom);
   }
-
+  /**
+   * On exit var id vector pop false bottom and create VERIFY quadruple
+   * Calculate address acording to the indexes and create relevant quadruples
+   */
   exitVar_id_vector(ctx: Var_id_vectorContext): void {
     const variable = this.getVariable(this.quads.arrayIds.peek());
     const exp = this.quads.operands.pop();
@@ -978,11 +1006,16 @@ export default class Listener implements ParPlusPlusListener {
     this.quads.operands.push(temp);
     this.quads.operators.pop();
   }
-
+  /**
+   * On enter var id matrix push false bottom
+   */
   enterVar_id_matrix(ctx: Var_id_matrixContext): void {
     this.quads.operators.push(Op.ArrayFalseBottom);
   }
-
+  /**
+   * On exit var id matrix pop false bottom and create VERIFY quadruple
+   * Calculate address acording to the indexes and create relevant quadruples
+   */
   exitVar_id_matrix(ctx: Var_id_matrixContext): void {
     const variable = this.getVariable(this.quads.arrayIds.peek());
     const exp = this.quads.operands.pop();
