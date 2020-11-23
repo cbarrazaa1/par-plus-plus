@@ -1,3 +1,6 @@
+/**
+ * Module where memory is managed in compilation and execution
+ */
 import {ConstantTable, FuncTable, FuncTableRow} from './semantics/SymbolTable';
 import {ValueType} from './semantics/Types';
 
@@ -26,6 +29,11 @@ export enum MemoryType {
   Constant,
 }
 
+/**
+ * Function that get an address and returns the ValueType associated with it
+ * @param addr address of the variable or constant
+ * @returns ValueType
+ */
 export function getTypeForAddress(addr: number): ValueType {
   if (
     (addr >= GLOBAL_INT && addr < GLOBAL_FLOAT) ||
@@ -54,7 +62,11 @@ export function getTypeForAddress(addr: number): ValueType {
     return ValueType.POINTER;
   }
 }
-
+/**
+ * Function that get an address and returns the MemoryType associated with it
+ * @param addr Address of the variable or constant
+ * @returns MemoryType
+ */
 export function getMemoryTypeForAddress(addr: number): MemoryType {
   if (addr >= GLOBAL_INT && addr < LOCAL_INT) {
     return MemoryType.Global;
@@ -67,7 +79,9 @@ export function getMemoryTypeForAddress(addr: number): MemoryType {
   }
 }
 
-// TODO: validar rangos al agregar
+/**
+ * Class that manages the virtual memory during compilation
+ */
 export class MemoryContext {
   private globalInts: number = GLOBAL_INT;
   private globalFloats: number = GLOBAL_FLOAT;
@@ -86,7 +100,11 @@ export class MemoryContext {
   private constFloats: number = CONST_FLOAT;
   private constChars: number = CONST_CHAR;
   private constStrings: number = CONST_STR;
-
+  /**
+   * Function that creates a new variable and returns the address
+   * @param type ValueType
+   * @param memType MemoryType
+   */
   public newVar(type: ValueType, memType: MemoryType): number {
     switch (type) {
       case ValueType.INT:
@@ -99,10 +117,11 @@ export class MemoryContext {
         return this.newPointer(); // temporal variable
     }
   }
-
+  /**
+   * Creates a new int, validates the range and returns its address
+   * @param type MemoryType
+   */
   public newInt(type: MemoryType): number {
-    console.log('NewInt');
-
     switch (type) {
       case MemoryType.Global:
         this.validateRange(this.globalInts + 1, GLOBAL_FLOAT);
@@ -118,7 +137,10 @@ export class MemoryContext {
         return this.constInts++;
     }
   }
-
+  /**
+   * Creates a new float, validates the range and returns its address
+   * @param type MemoryType
+   */
   public newFloat(type: MemoryType): number {
     switch (type) {
       case MemoryType.Global:
@@ -135,7 +157,10 @@ export class MemoryContext {
         return this.constFloats++;
     }
   }
-
+  /**
+   * Creates a new char, validates the range and returns its address
+   * @param type MemoryType
+   */
   public newChar(type: MemoryType): number {
     switch (type) {
       case MemoryType.Global:
@@ -152,17 +177,27 @@ export class MemoryContext {
         return this.constChars++;
     }
   }
-
+  /**
+   * Creates a new string, validates the range and returns its address
+   */
   public newString(): number {
     this.validateRange(this.constStrings + 1, CONST_STR + 1000);
     return this.constStrings++;
   }
-
+  /**
+   * Creates a new pointer, validates the range and returns its address
+   */
   public newPointer(): number {
     this.validateRange(this.tempPointers + 1, CONST_INT);
     return this.tempPointers++;
   }
-
+  /**
+   * Creates a new array, validates the range and returns its address
+   * A space equal with the array's size is separated.
+   * @param size size of the array
+   * @param type ValueType
+   * @param memType MemoryType
+   */
   public addArray(size: number, type: ValueType, memType: MemoryType): void {
     switch (type) {
       case ValueType.INT:
@@ -176,7 +211,12 @@ export class MemoryContext {
         break;
     }
   }
-
+  /**
+   * Creates a new int array, validates the range and returns its address
+   * A space equal with the array's size is separated.
+   * @param size size of the array
+   * @param memType MemoryType
+   */
   public addIntArray(size: number, memoryType: MemoryType): void {
     console.log('AddIntArray')
     // subtract one to size because initial address of variable is set when declared
@@ -191,7 +231,12 @@ export class MemoryContext {
         break;
     }
   }
-
+  /**
+   * Creates a new float array, validates the range and returns its address
+   * A space equal with the array's size is separated.
+   * @param size size of the array
+   * @param memType MemoryType
+   */
   public addFloatArray(size: number, memoryType: MemoryType): void {
     // subtract one to size because initial address of variable is set when declared
     switch (memoryType) {
@@ -205,7 +250,12 @@ export class MemoryContext {
         break;
     }
   }
-
+  /**
+   * Creates a new char array, validates the range and returns its address
+   * A space equal with the array's size is separated.
+   * @param size size of the array
+   * @param memType MemoryType
+   */
   public addCharArray(size: number, memoryType: MemoryType): void {
     // subtract one to size because initial address of variable is set when declared
     switch (memoryType) {
@@ -219,20 +269,29 @@ export class MemoryContext {
         break;
     }
   }
-
+  /**
+   * Resets local memory address count.
+   */
   public resetLocals(): void {
     this.localInts = LOCAL_INT;
     this.localFloats = LOCAL_FLOAT;
     this.localChars = LOCAL_CHAR;
   }
-
+  /**
+   * Resets temporal memory address count.
+   */
   public resetTemporals(): void {
     this.tempInts = TEMP_INT;
     this.tempFloats = TEMP_FLOAT;
     this.tempChars = TEMP_CHAR;
     this.tempPointers = TEMP_PTR;
   }
-
+  /**
+   * Validates the range of the address, 
+   * it the address is out of the range returns out of memory error
+   * @param count address
+   * @param range maximum valid range
+   */
   private validateRange(count: number, range: number): void {
     if (count >= range) {
       throw new Error('Out of memory.');
@@ -240,6 +299,9 @@ export class MemoryContext {
   }
 }
 
+/**
+ * Class for memory containing during execution.
+ */
 export class MemoryContainer {
   private ints: number[];
   private floats: number[];
@@ -252,7 +314,19 @@ export class MemoryContainer {
   private charStart: number;
   private stringStart?: number;
   private pointerStart?: number;
-
+  /**
+   * Initializes the values on the memory container class
+   * @param intCount 
+   * @param floatCount 
+   * @param charCount 
+   * @param stringCount 
+   * @param pointerCount 
+   * @param intStart Start of addresses for ints
+   * @param floatStart Start of addresses for floats
+   * @param charStart Start of addresses for chars
+   * @param stringStart Start of addresses for string
+   * @param pointerStart Start of addresses for pointers
+   */
   constructor(
     intCount: number,
     floatCount: number,
@@ -277,6 +351,10 @@ export class MemoryContainer {
     this.pointerStart = pointerStart;
   }
 
+  /**
+   * Returns the value asociated with the address in virtual memory
+   * @param addr 
+   */
   public getValue(addr: number): number | string {
     const type = getTypeForAddress(addr);
 
@@ -293,7 +371,11 @@ export class MemoryContainer {
         return this.getPointer(addr);
     }
   }
-
+  /**
+   * Sets value to the variable associated with the virtual memory address
+   * @param addr 
+   * @param value 
+   */
   public setValue(addr: number, value: number | string): void {
     const type = getTypeForAddress(addr);
 
@@ -315,47 +397,86 @@ export class MemoryContainer {
         break;
     }
   }
-
+  /**
+   * Returns the int asociated with the address in virtual memory
+   * @param addr 
+   */
   public getInt(addr: number): number {
     return this.ints[addr - this.intStart];
   }
-
+  /**
+   * Returns the float asociated with the address in virtual memory
+   * @param addr 
+   */
   public getFloat(addr: number): number {
     return this.floats[addr - this.floatStart];
   }
-
+  /**
+   * Returns the char asociated with the address in virtual memory
+   * @param addr 
+   */
   public getChar(addr: number): number {
     return this.chars[addr - this.charStart];
   }
-
+  /**
+   * Returns the string asociated with the address in virtual memory
+   * @param addr 
+   */
   public getString(addr: number): string {
     return this.strings[addr - this.stringStart];
   }
-
+  /**
+   * Returns the pointer asociated with the address in virtual memory
+   * @param addr 
+   */
   public getPointer(addr: number): number {
     return this.pointers[addr - this.pointerStart];
   }
-
+  /**
+   * Sets int value to the variable associated with the virtual memory address
+   * @param addr 
+   * @param value 
+   */
   public setInt(addr: number, value: number): void {
     this.ints[addr - this.intStart] = value;
   }
-
+  /**
+   * Sets float value to the variable associated with the virtual memory address
+   * @param addr 
+   * @param value 
+   */
   public setFloat(addr: number, value: number): void {
     this.floats[addr - this.floatStart] = value;
   }
-
+  /**
+   * Sets char value to the variable associated with the virtual memory address
+   * @param addr 
+   * @param value 
+   */
   public setChar(addr: number, value: number): void {
     this.chars[addr - this.charStart] = value;
   }
-
+  /**
+   * Sets string value to the variable associated with the virtual memory address
+   * @param addr 
+   * @param value 
+   */
   public setString(addr: number, value: string): void {
     this.strings[addr - this.stringStart] = value;
   }
-
+  /**
+   * Sets pointer value to the variable associated with the virtual memory address
+   * @param addr 
+   * @param value 
+   */
   public setPointer(addr: number, value: number): void {
     this.pointers[addr - this.pointerStart] = value;
   }
-
+  /**
+   * Pushes value into the type's array and returns the new address
+   * @param value 
+   * @param type ValueType
+   */
   public pushValue(value: number, type: ValueType): number {
     switch (type) {
       case ValueType.INT:
@@ -366,28 +487,43 @@ export class MemoryContainer {
         return this.pushChar(value);
     }
   }
-
+  /**
+   * Pushes value into the int array and returns the new address
+   * @param value 
+   */
   public pushInt(value: number): number {
     this.ints.push(value);
     return this.ints.length - 1 + this.intStart;
   }
-
+  /**
+   * Pushes value into the float array and returns the new address
+   * @param value 
+   */
   public pushFloat(value: number): number {
     this.floats.push(value);
     return this.floats.length - 1 + this.floatStart;
   }
-
+  /**
+   * Pushes value into the char array and returns the new address
+   * @param value 
+   */
   public pushChar(value: number): number {
     this.chars.push(value);
     return this.chars.length - 1 + this.charStart;
   }
 }
-
+/**
+ * Memory for the global context during execution
+ */
 export class DataSegment {
   public globals: MemoryContainer;
   public temps: MemoryContainer;
   public constants: MemoryContainer;
-
+  /**
+   * Initializes the memory containers
+   * @param globalTable Function Table
+   * @param constantTable Contant Table
+   */
   constructor(globalTable: FuncTableRow, constantTable: ConstantTable) {
     this.globals = new MemoryContainer(
       globalTable.varCount.ints,
@@ -463,12 +599,18 @@ export class DataSegment {
     }
   }
 }
-
+/**
+ * Memory for functions during execution
+ */
 export class ActivationRecord {
   public locals: MemoryContainer;
   public temps: MemoryContainer;
   public name: string;
-
+  /**
+   * Initializes the memory containers
+   * @param funcTable Function Table
+   * @param name Name of the function
+   */
   constructor(funcTable: FuncTableRow, name: string) {
     this.locals = new MemoryContainer(
       funcTable.varCount.ints,
