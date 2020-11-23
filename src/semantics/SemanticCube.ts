@@ -1,6 +1,13 @@
+/**
+ * Module where the semantic cube is defined
+ * the semantic cube is used to determine resultic type in expressions
+ */
 import { O_APPEND } from 'constants';
 import {ValueType} from './Types';
 
+/**
+ * Posible operators for the operatiors stack
+ */
 export enum Op {
   ADD, // +
   SUB, // -

@@ -1,3 +1,10 @@
+/**
+ * Module that has the enumeration for the posible types of value
+ */
+
+/**
+ * Enumeraton for types of value
+ */
 export enum ValueType {
   INT,
   FLOAT,
@@ -6,7 +13,12 @@ export enum ValueType {
   STRING,
   POINTER,
 }
-
+/**
+ * Function that recieves a string and returns the ValueType associated with it.
+ * If none matches it will trow an error.
+ * @param str 
+ * @returns ValueType
+ */
 export function stringToValueType(str: string): ValueType {
   switch (str) {
     case 'int':
