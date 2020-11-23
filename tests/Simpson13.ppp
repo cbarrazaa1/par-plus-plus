@@ -1,0 +1,40 @@
+program Simpson13;
+
+float module f(float x) {
+  return (x * x + 5 * x + 3);
+}
+
+int module isEven(int x) {
+  return ((x / 2) * 2 == x);
+}
+
+float module simpson13(float l, float u, int n)
+var
+  float h, res, x[10], fx[10];
+  int i;
+{
+  h = (u - l) / n;
+  for i = 0 to n do {
+    x[i] = l + i * h;
+    fx[i] = f(x[i]);
+  }
+
+  for i = 0 to n do {
+    if (i == 0 | i == n) then {
+      res = res + fx[i];
+    } else {
+      if (isEven(i) == 0) then {
+        res = res + 4 * fx[i];
+      } else {
+        res = res + 2 * fx[i];
+      }
+    }
+  }
+
+  res = res * (h / 3);
+  return (res);
+}
+
+main() {
+  write(simpson13(-5.0, 12.5, 6));
+}

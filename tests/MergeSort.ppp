@@ -1,0 +1,77 @@
+program MergeSort;
+var
+  int arr[10], i;
+
+void module merge(int l, int m, int r)
+var int n1, n2, L[10], R[10], i, j, k;
+{
+  n1 = m - l + 1;
+  n2 = r - m;
+
+  for i = 0 to n1 - 1 do {
+    L[i] = arr[l + i];
+  }
+
+  for j = 0 to n2 - 1 do {
+    R[j] = arr[m + 1 + j];
+  }
+
+  i = 0;
+  j = 0;
+  k = l;
+
+  while (i < n1 & j < n2) do {
+    if (L[i] <= R[j]) then {
+      arr[k] = L[i];
+      i = i + 1;
+    } else {
+      arr[k] = R[j];
+      j = j + 1;
+    }
+    k = k + 1;
+  }
+
+  while (i < n1) do {
+    arr[k] = L[i];
+    i = i + 1;
+    k = k + 1;
+  }
+
+  while (j < n2) do {
+    arr[k] = R[j];
+    j = j + 1;
+    k = k + 1;
+  }
+}
+
+void module mergeSort(int l, int r)
+var int m;
+{
+  if (l >= r) then {
+    return;
+  }
+
+  m = (l + r - 1) / 2;
+  mergeSort(l, m);
+  mergeSort(m + 1, r);
+  merge(l, m, r);
+}
+
+main() {
+  arr[0] = 36;
+  arr[1] = 15;
+  arr[2] = -1;
+  arr[3] = 1;
+  arr[4] = -74;
+  arr[5] = 39;
+  arr[6] = 122;
+  arr[7] = 4096;
+  arr[8] = -87;
+  arr[9] = 5;
+
+  mergeSort(0, 9);
+
+  for i = 0 to 9 do {
+    write(arr[i]);
+  }
+}

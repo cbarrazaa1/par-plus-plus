@@ -510,6 +510,11 @@ export default class Listener implements ParPlusPlusListener {
 
   enterStatement(ctx: StatementContext): void {
     if (ctx.func_call() != null) {
+      const name = ctx.func_call().ID().text;
+      if (this.funcTable[name] == null) {
+        throw new Error(`Undeclared function: ${name}`);
+      }
+      
       const func = this.funcTable[ctx.func_call().ID().text];
       if (func.type !== ValueType.VOID) {
         throw new Error('Using non-void function outside of expression.');
@@ -589,10 +594,29 @@ export default class Listener implements ParPlusPlusListener {
 
   exitInput_args(ctx: Input_argsContext): void {
     const ids = ctx.var_id();
-    const addresses = [];
+    const addresses: number[] = [];
 
-    while (!this.quads.operands.isEmpty()) {
-      addresses.push(this.quads.operands.pop());
+    // get addresses for arrays or normal variables
+    for (let i = 0; i < ids.length; i++) {
+      if (ids[i].var_id_vector() != null) {
+        addresses.push(this.quads.operands.pop());
+      } else {
+        const addr = this.getVariable(ids[i].ID().text).addr;
+        addresses.push(addr);
+      }
+    }
+
+    const arrs = [];
+    for (const addr of addresses) {
+      if (getTypeForAddress(addr) === ValueType.POINTER) {
+        arrs.push(addr);
+      }
+    }
+
+    for (let i = 0; i < addresses.length; i++) {
+      if (getTypeForAddress(addresses[i]) === ValueType.POINTER) {
+        addresses[i] = arrs.pop();
+      }
     }
 
     // create read quad for every argument
@@ -601,7 +625,8 @@ export default class Listener implements ParPlusPlusListener {
       let addr = variable.addr;
 
       if (addresses.length > 0) {
-        addr = addresses.pop();
+        addr = addresses[0];
+        addresses.shift();
       }
       this.quads.create(QuadrupleAction.READ, null, null, addr);
     }

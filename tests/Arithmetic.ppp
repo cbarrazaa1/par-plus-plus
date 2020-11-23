@@ -1,0 +1,22 @@
+program Ejemplo2;
+var
+  int a, b, c, d, e, f, g, h, j, l, k, res;
+
+main() {
+  a = 1;
+  b = 2;
+  c = 3;
+  d = 4;
+  e = 5;
+  f = 6;
+  g = 7;
+  h = 8;
+  j = 9;
+  l = 10;
+  k = 11;
+  res = 2753;
+
+  if (a + b + (c * d * (e - f * (g - h) + j) + l) * k == res) then {
+    write("Expressions work correctly!");
+  }
+}

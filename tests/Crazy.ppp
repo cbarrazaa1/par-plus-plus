@@ -7,11 +7,6 @@ int module func(int x, int y) {
   return (x + y);
 }
 
-void module test() {
-  write(func(arr[arr[i] * mat[func(arr[0], arr[0]) + 2][mat[0][0]]], 0), "\n");
-  write(func(func(10, func(func(1, 1), 10)), func(10, 10)), "\n");
-}
-
 main() {
   i = 3;
   arr[0] = 1;
@@ -19,5 +14,9 @@ main() {
   mat[0][0] = 1;
   mat[4][1] = 2;
   arr[4] = 420;
-  test();
+  
+  write(func(arr[arr[i] * mat[func(arr[0], arr[0]) + 2][mat[0][0]]], 0));
+  write(420);
+  write(func(func(10, func(func(1, 1), 10)), func(10, 10)));
+  write(42);
 }

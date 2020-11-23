@@ -1,0 +1,54 @@
+program QuickSort;
+var
+  int arr[10], i;
+
+int module partition(int low, int high)
+var int pivot, i, j, temp;
+{
+  pivot = arr[high];
+  i = low - 1;
+
+  for j = low to high - 1 do {
+    if (arr[j] < pivot) then {
+      i = i + 1;
+      temp = arr[i];
+      arr[i] = arr[j];
+      arr[j] = temp;
+    }
+  }
+
+  temp = arr[i + 1];
+  arr[i + 1] = arr[high];
+  arr[high] = temp;
+
+  return (i + 1);
+}
+
+void module quickSort(int low, int high) 
+var int pi;
+{
+  if (low < high) then {
+    pi = partition(low, high);
+    quickSort(low, pi - 1);
+    quickSort(pi + 1, high);
+  }
+}
+
+main() {
+  arr[0] = 36;
+  arr[1] = 15;
+  arr[2] = -1;
+  arr[3] = 1;
+  arr[4] = -74;
+  arr[5] = 39;
+  arr[6] = 122;
+  arr[7] = 4096;
+  arr[8] = -87;
+  arr[9] = 5;
+
+  quickSort(0, 9);
+
+  for i = 0 to 9 do {
+    write(arr[i]);
+  }
+}

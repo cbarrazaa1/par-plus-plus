@@ -6,15 +6,15 @@ var
   int i, j, k;
 
 main() {
-  read(A[0][0]);
-  read(A[0][1]);
-  read(A[1][0]);
-  read(A[1][1]);
+  A[0][0] = 12;
+  A[0][1] = 32;
+  A[1][0] = 67;
+  A[1][1] = 39;
 
-  read(B[0][0]);
-  read(B[0][1]);
-  read(B[1][0]);
-  read(B[1][1]);
+  B[0][0] = -3;
+  B[0][1] = -66;
+  B[1][0] = 123;
+  B[1][1] = 4;
 
   for i = 0 to 1 do {
     for j = 0 to 1 do {
@@ -26,8 +26,7 @@ main() {
 
   for i = 0 to 1 do {
     for j = 0 to 1 do {
-      write(C[i][j], " ");
+      write(C[i][j]);
     }
-    write("\n");
   }
 }

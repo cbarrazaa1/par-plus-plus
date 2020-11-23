@@ -1,0 +1,16 @@
+program Bools;
+
+main() {
+  write("AND", 300 & -12, 12 & 0, 0 & -1, 0 & 0);
+  write("OR", 300 | -12, 12 | 0, 0 | -1, 0 | 0);
+
+  if (0) then {
+    write("Never inside here");
+  } else {
+    write("0 is always false");
+  }
+
+  if (-100) then {
+    write("Other than zero, true.");
+  }
+}

@@ -1,0 +1,70 @@
+program GaussElim;
+var 
+  float mat[3][4], sol[3];
+
+void module readMatrix()
+var int i, j;
+{
+  for i = 0 to 2 do {
+    for j = 0 to 3 do {
+      read(mat[i][j]);
+    }
+  }
+}
+
+void module printMatrix()
+var int i, j;
+{
+  for i = 0 to 2 do {
+    for j = 0 to 3 do {
+      write(mat[i][j]);
+    }
+  }
+}
+
+void module gauss()
+var 
+  int i, j, k;
+  float ratio;
+{
+  for i = 0 to 2 do {
+    for j = 0 to 2 do {
+      if (i != j) then {
+        ratio = mat[j][i] / mat[i][i];
+        for k = 0 to 3 do {
+          mat[j][k] = mat[j][k] - ratio * mat[i][k];
+        }
+      }
+    }
+  }
+}
+
+void module showSolution()
+var int i;
+{
+  write("SOLUTION");
+  for i = 0 to 2 do {
+    write(mat[i][3] / mat[i][i]);
+  }
+}
+
+main() {
+  mat[0][0] = 3;
+  mat[0][1] = 5;
+  mat[0][2] = 2;
+  mat[0][3] = -4;
+
+  mat[1][0] = 7;
+  mat[1][1] = -2;
+  mat[1][2] = 4;
+  mat[1][3] = 1;
+
+  mat[2][0] = 6;
+  mat[2][1] = 1;
+  mat[2][2] = 2;
+  mat[2][3] = 3;
+  
+  gauss();
+  printMatrix();
+  showSolution();
+}
