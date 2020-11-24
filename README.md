@@ -1,25 +1,3 @@
-# Progreso Actual - Entrega #4
-En esta entrega se realiza la generación de cuádruplos para funciones, así
-como el manejo del valor de retorno de funciones dentro de expresiones.
-
-# Anterior - Entrega #3
-En esta entrega se realiza la generación básica de cuádruplos lineales, como
-expresiones, asignaciones, prints y reads. Además, se implementan cuádruplos no
-lineales como el if, if-else, while y for.
-
-Incluye también las bases para comenzar la generación de código para funciones, 
-pero no hay mucho hecho en ese aspecto todavía.
-
-## Anterior - Entrega #2
-En esta entrega se realiza la semántica básica del compilador. Ya se crea
-la tabla de funciones, y cada una de estas funciones crean su respectiva
-tabla de variables. También ya se da error de declaración múltiple en caso
-de nombre de variables o funciones repetidos.
-
-Finalmente, ya está construido el cubo semántico para utilizarse en entregas
-posteriores.
-
-
 # Resumen de Progreso
 - Análisis de Léxico y Sintáxis [100%]
 ---
@@ -32,11 +10,11 @@ posteriores.
 - Generación de Código de Estatutos Condicionales: Ciclos [100%]
 - Generación de Código de Funciones [100%]
 ---
-- Mapa de Memoria de Ejecución para la Máquina Virtual [0%]
-- Máquina Virtual: Ejecución de Expresiones Aritméticas y Estatus Secuenciales [0%]
+- Mapa de Memoria de Ejecución para la Máquina Virtual [100%]
+- Máquina Virtual: Ejecución de Expresiones Aritméticas y Estatus Secuenciales [100%]
 ---
-- Generación de Código de Arreglos/Tipos Estructurados [0%]
-- Máquina Virtual: Ejecución de Estatutos Condicionales [0%]
+- Generación de Código de Arreglos/Tipos Estructurados [100%]
+- Máquina Virtual: Ejecución de Estatutos Condicionales [100%]
 ---
-- 1era Versión de la Documentación [0%]
-- Generación de Código y Máquina Virtual para una parte de la aplicación particular [0%]
+- 1era Versión de la Documentación [100%]
+- Generación de Código y Máquina Virtual para una parte de la aplicación particular [100%]
