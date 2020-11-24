@@ -12,10 +12,17 @@ import readline from 'readline-sync';
 import {Stack} from 'typescript-collections';
 import {SemanticCube} from './semantics/SemanticCube';
 
+/**
+ * Converts a boolean to int
+ * @param bool Bool to convert
+ */
 function boolToInt(bool: boolean) {
   return bool ? 1 : 0;
 }
 
+/**
+ * Map of actions to functions for binary operators for VM
+ */
 const binaryOperations = {
   [QuadrupleAction.ADD]: (a, b) => a + b,
   [QuadrupleAction.SUB]: (a, b) => a - b,
@@ -60,6 +67,10 @@ export class VirtualMachine {
     this.paramCountStack = new Stack();
   }
 
+  /**
+   * Gets the value found in the passed address.
+   * @param addr Address to access
+   */
   private getValue(addr: number): number | string {
     const memoryType = getMemoryTypeForAddress(addr);
 
@@ -78,6 +89,11 @@ export class VirtualMachine {
     }
   }
 
+  /**
+   * Sets the value given to the passed address
+   * @param addr Address to modify
+   * @param value Value to put at address
+   */
   private setValue(addr: number, value: number | string): void {
     const memoryType = getMemoryTypeForAddress(addr);
 
@@ -94,10 +110,20 @@ export class VirtualMachine {
     }
   }
 
+  /**
+   * Sets a value for an upcoming function's parameter
+   * @param addr Address of parameter in ActivationRecord
+   * @param value Value to put to address
+   */
   private setParam(addr: number, value: number | string): void {
     this.ss.peek().locals.setValue(addr, value);
   }
 
+  /**
+   * Expands the memory to add new values
+   * @param value Value to put into
+   * @param type Type of the value to push
+   */
   private pushValue(value: number, type: ValueType): number {
     if (this.visitedFunctions.peek() == null) {
       return this.ds.temps.pushValue(value, type);
@@ -106,6 +132,10 @@ export class VirtualMachine {
     return this.visitedFunctions.peek().temps.pushValue(value, type);
   }
 
+  /**
+   * Handles all binary operations for the VM
+   * @param quad Quadruple currently processing
+   */
   private binaryOperationFunc(quad: Quadruple) {
     const leftType = getTypeForAddress(quad.left as number);
     const rightType = getTypeForAddress(quad.right as number);
@@ -113,6 +143,7 @@ export class VirtualMachine {
     let right = this.getValue(quad.right as number);
     let res = quad.result as number;
 
+    // check if we need to do indirection if values are pointers
     if (leftType === ValueType.POINTER) {
       left = this.getValue(left as number);
     }
@@ -125,6 +156,7 @@ export class VirtualMachine {
       res = this.getValue(res as number) as number;
     }
 
+    // if both operands are pointers, we need to figure out result type
     if (
       res == null ||
       (leftType === ValueType.POINTER && rightType === ValueType.POINTER)
@@ -150,6 +182,7 @@ export class VirtualMachine {
         throw new Error('Runtime error: Incompatible pointer types.');
       }
 
+      // truncate if result is int
       let binOp = binaryOperations[quad.action](left, right);
       if (quad.action === QuadrupleAction.DIV) {
         if (resultType === ValueType.INT) {
@@ -157,6 +190,7 @@ export class VirtualMachine {
         }
       }
 
+      // push newly added result
       const tempAddr = this.pushValue(
         binaryOperations[quad.action](left, right),
         resultType,
@@ -173,6 +207,9 @@ export class VirtualMachine {
     }
   }
 
+  /**
+   * Runs the program, executing quadruples line by line
+   */
   public run(): void {
     while (this.quads[this.ip].action !== QuadrupleAction.END) {
       const quad = this.quads[this.ip];
@@ -286,10 +323,6 @@ export class VirtualMachine {
           // push visited function
           this.visitedFunctions.push( 
             this.ss.peek(),
-            // new ActivationRecord(
-            //   this.funcTable[quad.result],
-            //   quad.result as string,
-            // ),
           );
           this.jumps.push(this.ip + 1);
           this.ip = quad.result as number;

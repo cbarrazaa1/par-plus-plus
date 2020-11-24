@@ -1,6 +1,5 @@
 import {Stack} from 'typescript-collections';
 import {Op} from './semantics/SemanticCube';
-import {ValueType} from './semantics/Types';
 
 export enum QuadrupleAction {
   ADD = '+',
@@ -30,6 +29,9 @@ export enum QuadrupleAction {
   END = 'END',
 }
 
+/**
+ * Can be an address, a function name or nothing.
+ */
 type QuadrupleValue = number | string | null;
 
 export type Quadruple = {
@@ -39,6 +41,10 @@ export type Quadruple = {
   result: QuadrupleValue;
 };
 
+/**
+ * Converts a quadruple action to its corresponding operator for semantic check
+ * @param action Action to convert
+ */
 export function quadActionToOp(action: QuadrupleAction): Op {
   switch (action) {
     case QuadrupleAction.ADD:
@@ -68,6 +74,9 @@ export function quadActionToOp(action: QuadrupleAction): Op {
   }
 }
 
+/**
+ * Makes quadruple management easier for creating and filling.
+ */
 export class QuadrupleContext {
   private quads: Quadruple[] = [];
   public operands: Stack<number> = new Stack();
@@ -75,6 +84,13 @@ export class QuadrupleContext {
   public jumps: Stack<number> = new Stack();
   public arrayIds: Stack<string> = new Stack();
 
+  /**
+   * Adds a new quadruple to the quadruple vector
+   * @param action Type of quadruple action
+   * @param left Left address
+   * @param right Right address
+   * @param result Result address
+   */
   public create(
     action: QuadrupleAction,
     left: QuadrupleValue,
@@ -89,19 +105,33 @@ export class QuadrupleContext {
     });
   }
 
+  /**
+   * Gets the total amount of quadruples in the vector
+   */
   public size(): number {
     return this.quads.length;
   }
 
+  /**
+   * Fills in an incomplete quadruple.
+   * @param quad Number of quadruple to fill.
+   * @param dest Data to put into incomplete quadruple
+   */
   public fill(quad: number, dest: number): void {
     this.quads[quad].result = dest;
   }
 
+  /**
+   * Prints the quadruple vector as a table for debugging purposes
+   */
   public print(): void {
     console.log(`****************\n** Quadruples **\n****************`);
     console.table(this.quads);
   }
 
+  /**
+   * Returns the entire quadruple vector
+   */
   public getQuads(): Quadruple[] {
     return this.quads;
   }

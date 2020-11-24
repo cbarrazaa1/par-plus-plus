@@ -10,6 +10,9 @@ import {VirtualMachine} from './VirtualMachine';
 import ErrorHandler from './ErrorHandler';
 import readline from 'readline-sync';
 
+/**
+ * Program entrypoint
+ */
 function main(): void {
   const fileName = readline.question('Nombre de archivo: ');
 

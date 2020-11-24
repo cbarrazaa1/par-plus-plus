@@ -65,6 +65,5 @@ main() {
   mat[2][3] = 3;
   
   gauss();
-  printMatrix();
   showSolution();
 }

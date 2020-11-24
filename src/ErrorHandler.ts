@@ -5,6 +5,9 @@ import {
   Token,
 } from 'antlr4ts';
 
+/**
+ * Listens for syntax errors during the parsing process 
+ */
 class ErrorHandler implements ParserErrorListener {
   public syntaxError<T extends Token>(
     recognizer: Recognizer<T, any>,
